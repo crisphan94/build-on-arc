@@ -8,22 +8,28 @@ This is a complete tutorial set with **3 different methods**, ranging from easy 
 
 ## 📚 PLAN FILES
 
-### [PLAN_METHOD_1_EASY.md](./PLAN_METHOD_1_EASY.md)
+### [PLAN_QUICK_AGENT.md](./PLAN_QUICK_AGENT.md)
+
 **Frontend-First Approach** - Web App with Minimal Smart Contract
+
 - 🎯 Difficulty: ⭐⭐ (Easy)
 - ⏱️ Time: 2-3 hours
 - 👤 Best for: Beginners, Frontend developers
 - 💡 Use case: Quick MVP, hackathons, learning
 
-### [PLAN_METHOD_2_MEDIUM.md](./PLAN_METHOD_2_MEDIUM.md) 
+### [PLAN_METHOD_2_MEDIUM.md](./PLAN_METHOD_2_MEDIUM.md)
+
 **Hybrid Approach** - App Kit SDK + Custom Contracts
+
 - 🎯 Difficulty: ⭐⭐⭐ (Medium)
 - ⏱️ Time: 2-3 hours
 - 👤 Best for: Experienced developers, production teams
 - 💡 Use case: Production apps, stable infrastructure
 
 ### [PLAN_METHOD_3_ADVANCED.md](./PLAN_METHOD_3_ADVANCED.md)
+
 **Full Custom** - Direct Smart Contract Implementation
+
 - 🎯 Difficulty: ⭐⭐⭐⭐⭐ (Very Hard)
 - ⏱️ Time: 4-6 hours
 - 👤 Best for: Senior blockchain devs, companies
@@ -38,40 +44,41 @@ This is a complete tutorial set with **3 different methods**, ranging from easy 
 \`\`\`
 Do you have blockchain experience?
 │
-├─ NO → Method 1 (EASY)
+├─ NO → Quick Agent (EASY)
 │
-├─ BASIC → Method 2 (MEDIUM)  ✅ RECOMMENDED
+├─ BASIC → Sdk Agent (MEDIUM) ✅ RECOMMENDED
 │
-└─ ADVANCED → Method 3 (ADVANCED)
+└─ ADVANCED → Custom Agent (ADVANCED)
 \`\`\`
 
 ---
 
 ## 📊 DETAILED COMPARISON
 
-| Criteria | Method 1 (Easy) | Method 2 (Medium) | Method 3 (Advanced) |
-|----------|----------------|-------------------|---------------------|
-| **Difficulty** | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Time** | 2-3h | 2-3h | 4-6h |
-| **Code Volume** | ~800 lines | ~1500 lines | ~3000+ lines |
-| **Required Knowledge** | React, basic TS | TS, Solidity basic | Advanced Solidity, patterns |
-| **Smart Contracts** | 1 simple (~100 lines) | 2-3 contracts | 5+ contracts + libraries |
-| **Testing** | Basic | Unit + Integration | Full coverage + fuzzing |
-| **ERC-8004 Compliant** | Minimal | Inspired | Full ✅ |
-| **ERC-8183 Jobs** | ❌ | ❌ | ✅ |
-| **Payment System** | ❌ | App Kit ✅ | Custom raw USDC |
-| **IPFS** | Client-side upload | Pinata SDK | Custom service |
-| **Upgradeability** | ❌ | ❌ | UUPS Proxy ✅ |
-| **Gas Cost** | Medium | Medium | Optimized |
-| **Production Ready** | MVP only | ✅ | ✅ Enterprise |
-| **Learning Curve** | 1 day | 2-3 days | 1-2 weeks |
-| **Maintenance** | Easy | Medium | Complex |
+| Criteria               | Quick Agent (Easy)    | Sdk Agent (Medium) | Custom Agent (Advanced)     |
+| ---------------------- | --------------------- | ------------------ | --------------------------- |
+| **Difficulty**         | ⭐⭐                  | ⭐⭐⭐             | ⭐⭐⭐⭐⭐                  |
+| **Time**               | 2-3h                  | 2-3h               | 4-6h                        |
+| **Code Volume**        | ~800 lines            | ~1500 lines        | ~3000+ lines                |
+| **Required Knowledge** | React, basic TS       | TS, Solidity basic | Advanced Solidity, patterns |
+| **Smart Contracts**    | 1 simple (~100 lines) | 2-3 contracts      | 5+ contracts + libraries    |
+| **Testing**            | Basic                 | Unit + Integration | Full coverage + fuzzing     |
+| **ERC-8004 Compliant** | Minimal               | Inspired           | Full ✅                     |
+| **ERC-8183 Jobs**      | ❌                    | ❌                 | ✅                          |
+| **Payment System**     | ❌                    | App Kit ✅         | Custom raw USDC             |
+| **IPFS**               | Client-side upload    | Pinata SDK         | Custom service              |
+| **Upgradeability**     | ❌                    | ❌                 | UUPS Proxy ✅               |
+| **Gas Cost**           | Medium                | Medium             | Optimized                   |
+| **Production Ready**   | MVP only              | ✅                 | ✅ Enterprise               |
+| **Learning Curve**     | 1 day                 | 2-3 days           | 1-2 weeks                   |
+| **Maintenance**        | Easy                  | Medium             | Complex                     |
 
 ---
 
 ## 💎 FEATURE COMPARISON
 
-### Method 1 - EASY
+### Quick Agent - EASY
+
 ✅ Quick setup (Next.js)  
 ✅ Beautiful UI (shadcn/ui)  
 ✅ Wallet connection (RainbowKit)  
@@ -82,14 +89,15 @@ Do you have blockchain experience?
 ❌ No payment system  
 ❌ Basic smart contract  
 ❌ No reputation system  
-❌ No job contracts  
+❌ No job contracts
 
 **Output**: Web application + Simple registry contract
 
 ---
 
-### Method 2 - MEDIUM ⭐ RECOMMENDED
-✅ All Method 1 features  
+### Sdk Agent - MEDIUM ⭐ RECOMMENDED
+
+✅ All Quick Agent features  
 ✅ **Circle App Kit SDK** (official)  
 ✅ USDC payments  
 ✅ Cross-chain bridging  
@@ -99,14 +107,15 @@ Do you have blockchain experience?
 ✅ Unit tests  
 ✅ TypeScript services  
 ❌ No ERC-8183 jobs  
-❌ No upgradeability  
+❌ No upgradeability
 
 **Output**: Production-ready platform with payment capabilities
 
 ---
 
-### Method 3 - ADVANCED
-✅ All Method 2 features  
+### Custom Agent - ADVANCED
+
+✅ All Sdk Agent features  
 ✅ **Full ERC-8004** implementation  
 ✅ **ERC-8183** job settlement  
 ✅ Multi-signature support  
@@ -118,7 +127,7 @@ Do you have blockchain experience?
 ✅ Security audits (Slither, Mythril)  
 ✅ The Graph subgraph  
 ✅ GraphQL API  
-✅ Event indexing  
+✅ Event indexing
 
 **Output**: Enterprise-grade agent economy platform
 
@@ -126,9 +135,11 @@ Do you have blockchain experience?
 
 ## 🛠️ TECH STACK BREAKDOWN
 
-### Method 1 (Easy)
+### Quick Agent (Easy)
+
 \`\`\`
 Frontend:
+
 - Next.js 14 App Router
 - React + TypeScript
 - Tailwind CSS + shadcn/ui
@@ -136,51 +147,61 @@ Frontend:
 - RainbowKit
 
 Smart Contract:
+
 - 1 simple Solidity contract
 - Hardhat for deployment
 
 IPFS:
+
 - Browser IPFS client
 - Pinata API
 
 Total Dependencies: ~30 packages
 \`\`\`
 
-### Method 2 (Medium)
+### Sdk Agent (Medium)
+
 \`\`\`
 Backend:
+
 - Node.js + TypeScript
 - Circle App Kit SDK
 - ethers/viem
 - Hardhat
 
 Smart Contracts:
+
 - AgentRegistry.sol
 - AgentReputation.sol
 - OpenZeppelin libraries
 
 Services:
+
 - AgentService
 - PaymentService (App Kit)
 - IPFSService (Pinata)
 - ReputationService
 
 Testing:
+
 - Hardhat tests
 - Chai assertions
 
 Total Dependencies: ~40 packages
 \`\`\`
 
-### Method 3 (Advanced)
+### Custom Agent (Advanced)
+
 \`\`\`
 Infrastructure:
+
 - Foundry + Hardhat hybrid
 - TypeScript + Solidity
 - The Graph (subgraph)
 - Better-sqlite3 (indexing)
 
 Smart Contracts:
+
 - ERC-8004 full implementation
 - ERC-8183 job contracts
 - UUPS upgradeable proxies
@@ -189,12 +210,14 @@ Smart Contracts:
 - OpenZeppelin Upgradeable
 
 Services:
+
 - Complete service layer
 - GraphQL API (Apollo)
 - WebSocket server
 - Blockchain indexer
 
 Testing:
+
 - Unit tests
 - Integration tests
 - Fuzzing (Foundry)
@@ -209,22 +232,26 @@ Total Dependencies: ~60+ packages
 ## 📈 LEARNING PATH
 
 ### If you're new to blockchain:
-1. Start with **Method 1** to understand concepts
+
+1. Start with **Quick Agent** to understand concepts
 2. Deploy to testnet, see agents working
 3. Then read the code and learn each part
 
 ### If you know React/Next.js:
-1. **Method 1** will be very familiar
+
+1. **Quick Agent** will be very familiar
 2. Focus on learning wagmi and wallet integration
 3. Smart contract is copy-paste friendly
 
 ### If you know basic Solidity:
-1. Try **Method 2** to learn production patterns
+
+1. Try **Sdk Agent** to learn production patterns
 2. Learn how to integrate App Kit SDK
 3. Understand testing and deployment
 
 ### If you have blockchain experience:
-1. **Method 3** to challenge yourself
+
+1. **Custom Agent** to challenge yourself
 2. Implement standards (ERC-8004, ERC-8183)
 3. Learn advanced patterns (proxies, upgrades)
 
@@ -234,50 +261,52 @@ Total Dependencies: ~60+ packages
 
 ### Development Cost (Time = Money)
 
-| Metric | Method 1 | Method 2 | Method 3 |
-|--------|----------|----------|----------|
-| **Initial Development** | \$500-1000 | \$1000-2000 | \$3000-5000 |
-| **Maintenance/year** | \$500 | \$1500 | \$3000 |
-| **Testing Effort** | Low | Medium | High |
-| **Audit Cost** | N/A | \$2k-5k | \$5k-15k |
-| **Team Size** | 1 dev | 1-2 devs | 2-3 devs |
+| Metric                  | Quick Agent | Sdk Agent   | Custom Agent |
+| ----------------------- | ----------- | ----------- | ------------ |
+| **Initial Development** | \$500-1000  | \$1000-2000 | \$3000-5000  |
+| **Maintenance/year**    | \$500       | \$1500      | \$3000       |
+| **Testing Effort**      | Low         | Medium      | High         |
+| **Audit Cost**          | N/A         | \$2k-5k     | \$5k-15k     |
+| **Team Size**           | 1 dev       | 1-2 devs    | 2-3 devs     |
 
 ### Gas Cost (on Arc Testnet)
 
-| Operation | Method 1 | Method 2 | Method 3 |
-|-----------|----------|----------|----------|
-| **Agent Registration** | ~80k gas | ~120k gas | ~90k gas* |
-| **Update Reputation** | ~40k gas | ~50k gas | ~35k gas* |
-| **Payment** | N/A | Via App Kit | ~60k gas |
+| Operation              | Quick Agent | Sdk Agent   | Custom Agent |
+| ---------------------- | ----------- | ----------- | ------------ |
+| **Agent Registration** | ~80k gas    | ~120k gas   | ~90k gas\*   |
+| **Update Reputation**  | ~40k gas    | ~50k gas    | ~35k gas\*   |
+| **Payment**            | N/A         | Via App Kit | ~60k gas     |
 
-*Optimized with assembly and custom patterns
+\*Optimized with assembly and custom patterns
 
 ---
 
 ## 🎓 RECOMMENDED LEARNING ORDER
 
 ### For Complete Beginners:
+
 \`\`\`
-Week 1: Method 1
+Week 1: Quick Agent
 ├─ Day 1-2: Setup and deploy contract
 ├─ Day 3-4: Build frontend
 ├─ Day 5: Test and deploy to Vercel
 └─ Day 6-7: Customize and add features
 
-Week 2: Understand Method 2
+Week 2: Understand Sdk Agent
 ├─ Read code
 ├─ Understand App Kit
 └─ Try modifications
 
-Week 3+: Explore Method 3
+Week 3+: Explore Custom Agent
 └─ Deep dive into standards
 \`\`\`
 
 ### For Experienced Developers:
+
 \`\`\`
 Day 1: Quick skim all 3 methods
-Day 2-3: Implement Method 2
-Day 4+: Study Method 3 patterns
+Day 2-3: Implement Sdk Agent
+Day 4+: Study Custom Agent patterns
 Optional: Hybrid your own approach
 \`\`\`
 
@@ -310,24 +339,27 @@ Optional: Hybrid your own approach
 
 ### Quick Start by Method
 
-#### Method 1:
+#### Quick Agent:
+
 \`\`\`bash
-cd method-1-easy
+cd quick-agent
 npm install
 npm run dev
 \`\`\`
 
-#### Method 2:
+#### Sdk Agent:
+
 \`\`\`bash
-cd method-2-medium
+cd sdk-agent
 npm install
 npx hardhat run scripts/deploy.ts --network arcTestnet
 npx ts-node scripts/full-workflow.ts
 \`\`\`
 
-#### Method 3:
+#### Custom Agent:
+
 \`\`\`bash
-cd method-3-advanced
+cd custom-agent
 npm install
 forge install
 forge test
@@ -346,11 +378,11 @@ PLAN_METHOD_X.md/
 ├─ Prerequisites
 ├─ Project Structure
 ├─ Step-by-Step Implementation
-│   ├─ Phase 1: Setup
-│   ├─ Phase 2: Contracts
-│   ├─ Phase 3: Services
-│   ├─ Phase 4: Testing
-│   └─ Phase 5: Deployment
+│ ├─ Phase 1: Setup
+│ ├─ Phase 2: Contracts
+│ ├─ Phase 3: Services
+│ ├─ Phase 4: Testing
+│ └─ Phase 5: Deployment
 ├─ Testing Guide
 ├─ Troubleshooting
 ├─ Timeline
@@ -361,21 +393,24 @@ PLAN_METHOD_X.md/
 
 ## 🎯 USE CASES BY METHOD
 
-### Method 1 - Perfect For:
+### Quick Agent - Perfect For:
+
 - 🎓 Learning projects
 - 🏆 Hackathons
 - 🎨 UI/UX prototypes
 - 📱 Portfolio projects
 - 🚀 Quick MVPs
 
-### Method 2 - Perfect For:
+### Sdk Agent - Perfect For:
+
 - 💼 Startup MVPs
 - 🏢 Small business apps
 - 📊 Production apps
 - 💰 Apps with payment features
 - 🌐 Cross-chain applications
 
-### Method 3 - Perfect For:
+### Custom Agent - Perfect For:
+
 - 🏦 Enterprise platforms
 - 🔒 Security-critical apps
 - 🎛️ Apps needing full control
@@ -387,6 +422,7 @@ PLAN_METHOD_X.md/
 ## ⚠️ IMPORTANT NOTES
 
 ### Network Information (VERIFIED)
+
 \`\`\`
 Network: Arc Testnet
 RPC: https://rpc.testnet.arc.network
@@ -399,12 +435,14 @@ Faucet: https://faucet.circle.com
 ### What EXISTS vs What DOESN'T
 
 ✅ **EXISTS:**
+
 - Arc Network testnet
 - Circle App Kit SDK
 - ERC-8004 & ERC-8183 standards (as EIPs)
 - USDC native gas
 
 ❌ **DOESN'T EXIST (Yet):**
+
 - \`@circle-fin/ai-agent-sdk\` package
 - Circle Console UI for agents
 - Official agent registry contract
@@ -415,6 +453,7 @@ Faucet: https://faucet.circle.com
 ## 🤝 CONTRIBUTION
 
 If you implement any of the 3 methods:
+
 1. Share feedback
 2. Report issues
 3. Suggest improvements
@@ -435,32 +474,35 @@ If you implement any of the 3 methods:
 
 After completing any method:
 
-### Method 1:
+### Quick Agent:
+
 ✅ Deployed web app  
 ✅ Agent registry working  
 ✅ Beautiful and functional UI  
-✅ Portfolio piece  
+✅ Portfolio piece
 
-### Method 2:
+### Sdk Agent:
+
 ✅ Production-ready platform  
 ✅ Payment system working  
 ✅ Can scale to users  
-✅ Ready for beta launch  
+✅ Ready for beta launch
 
-### Method 3:
+### Custom Agent:
+
 ✅ Enterprise-grade system  
 ✅ Full agent economy  
 ✅ Security audited  
-✅ Ready for mainnet  
+✅ Ready for mainnet
 
 ---
 
 ## 📅 TIMELINE ROADMAP
 
 \`\`\`
-Week 1: Learn & Prototype (Method 1)
-Week 2: Build Production MVP (Method 2)
-Week 3-4: Advanced Implementation (Method 3)
+Week 1: Learn & Prototype (Quick Agent)
+Week 2: Build Production MVP (Sdk Agent)
+Week 3-4: Advanced Implementation (Custom Agent)
 Week 5+: Mainnet Preparation
 \`\`\`
 
@@ -471,16 +513,16 @@ Week 5+: Mainnet Preparation
 ### Need a quick answer?
 
 **🎯 You're a beginner?**
-→ **Method 1** - Easy start, fast learning
+→ **Quick Agent** - Easy start, fast learning
 
 **🎯 Building for production?**
-→ **Method 2** - Best balance, stable App Kit
+→ **Sdk Agent** - Best balance, stable App Kit
 
 **🎯 Need complex custom logic?**
-→ **Method 3** - Full control, maximum flexibility
+→ **Custom Agent** - Full control, maximum flexibility
 
 **🎯 Not sure?**
-→ **Method 2** - Safe choice for most cases
+→ **Sdk Agent** - Safe choice for most cases
 
 ---
 

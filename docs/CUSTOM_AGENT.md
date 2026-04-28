@@ -1,4 +1,4 @@
-# METHOD 3 (ADVANCED): FULL CUSTOM - Direct Smart Contract Implementation
+# CUSTOM AGENT (ADVANCED): FULL CUSTOM - Direct Smart Contract Implementation
 
 ## 📋 OVERVIEW
 
@@ -98,7 +98,7 @@ hardhat-upgrades
 ## 🏗️ PROJECT STRUCTURE
 
 ```
-method-3-advanced/
+custom-agent/
 ├── contracts/                          # Smart contracts
 │   ├── core/
 │   │   ├── AgentRegistry.sol           # ERC-8004 full implementation
@@ -233,8 +233,8 @@ method-3-advanced/
 #### Step 1.1: Initialize Foundry + Hardhat Hybrid
 
 ```bash
-mkdir method-3-advanced
-cd method-3-advanced
+mkdir custom-agent
+cd custom-agent
 
 # Initialize Foundry
 forge init --no-git
@@ -1366,7 +1366,7 @@ contract JobContract is IERC8183, ReentrancyGuard {
 
 ---
 
-**📝 NOTE**: Due to length limitations, I have created the foundation for Method 3 (Advanced). This plan file includes:
+**📝 NOTE**: Due to length limitations, I have created the foundation for Custom Agent (Advanced). This plan file includes:
 
 1. ✅ Complete project structure
 2. ✅ Foundry + Hardhat hybrid setup

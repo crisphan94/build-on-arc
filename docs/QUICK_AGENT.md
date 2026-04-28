@@ -1,4 +1,4 @@
-# METHOD 1 (EASY): FRONTEND-FIRST - Web App with Minimal Smart Contract
+# Quick Agent (EASY): FRONTEND-FIRST - Web App with Minimal Smart Contract
 
 ## 📋 OVERVIEW
 
@@ -74,7 +74,7 @@ npm --version
 ## 🏗️ PROJECT STRUCTURE
 
 ```
-method-1-easy/
+quick-agent/
 ├── app/                          # Next.js 14 App Router
 │   ├── layout.tsx                # Root layout
 │   ├── page.tsx                  # Landing page
@@ -133,8 +133,8 @@ method-1-easy/
 #### Step 1.1: Create Next.js Project
 
 ```bash
-npx create-next-app@latest method-1-easy --typescript --tailwind --app
-cd method-1-easy
+npx create-next-app@latest quick-agent --typescript --tailwind --app
+cd quick-agent
 ```
 
 Select options:
@@ -1298,7 +1298,7 @@ vercel
 ### README.md
 
 ````markdown
-# Arc AI Agents - Easy Method (Frontend-First)
+# Arc AI Agents - Quick Agent (Frontend-First)
 
 Beautiful web app to create and manage AI agents on Arc Network.
 
@@ -1307,7 +1307,7 @@ Beautiful web app to create and manage AI agents on Arc Network.
 1. **Clone & Install**
    ```bash
    git clone <repo>
-   cd method-1-easy
+   cd quick-agent
    npm install
    ```
 ````

@@ -7,7 +7,7 @@
 All documentation is located in the [`docs/`](./docs/) directory:
 
 - **[docs/README.md](./docs/README.md)** - Main overview and method comparison
-- **[docs/PLAN_METHOD_1_EASY.md](./docs/PLAN_METHOD_1_EASY.md)** - Frontend-First approach (⭐⭐ Easy)
+- **[docs/QUICK_AGENT.md](./docs/QUICK_AGENT.md)** - Frontend-First approach (⭐⭐ Easy)
 - **[docs/PLAN_METHOD_2_MEDIUM.md](./docs/PLAN_METHOD_2_MEDIUM.md)** - Hybrid App Kit approach (⭐⭐⭐ Medium) ✅ Recommended
 - **[docs/PLAN_METHOD_3_ADVANCED.md](./docs/PLAN_METHOD_3_ADVANCED.md)** - Full custom implementation (⭐⭐⭐⭐⭐ Advanced)
 
@@ -24,9 +24,9 @@ cd docs
 
 ## 🎯 Which Method to Choose?
 
-- **Beginner?** → Method 1 (Easy)
-- **Production app?** → Method 2 (Medium) ✅ Recommended
-- **Expert with custom needs?** → Method 3 (Advanced)
+- **Beginner?** → Quick Agent (Easy)
+- **Production app?** → Sdk Agent (Medium) ✅ Recommended
+- **Expert with custom needs?** → Custom Agent (Advanced)
 
 ## 📖 Learn More
 

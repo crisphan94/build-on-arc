@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-inter: var(--font-inter);
+  --font-poppins: var(--font-poppins);
+  
+  --color-*: initial;
+  --color-slate-50: oklch(98.7% 0 0);
+  --color-slate-100: oklch(97.3% 0 0);
+  --color-slate-200: oklch(93.7% 0.002 255.5);
+  --color-slate-300: oklch(88.2% 0.004 255.5);
+  --color-slate-400: oklch(71.7% 0.011 256.8);
+  --color-slate-500: oklch(58% 0.015 257.4);
+  --color-slate-600: oklch(47.9% 0.013 257.3);
+  --color-slate-700: oklch(39.8% 0.011 259.5);
+  --color-slate-800: oklch(27% 0.009 256.8);
+  --color-slate-900: oklch(19.5% 0.007 256.8);
+  --color-slate-950: oklch(13.1% 0.005 264.5);
+  
+  --color-indigo-400: oklch(67.3% 0.182 266.3);
+  --color-indigo-500: oklch(61.2% 0.201 266.3);
+  --color-indigo-600: oklch(54.5% 0.203 266.3);
+  --color-indigo-700: oklch(47.1% 0.17 267.8);
+  
+  --color-purple-400: oklch(67.3% 0.21 298.5);
+  --color-purple-500: oklch(61% 0.23 297.7);
+  --color-purple-600: oklch(54.3% 0.229 297.7);
+  
+  --color-pink-400: oklch(72% 0.199 3.4);
+  --color-pink-500: oklch(65.8% 0.22 4.5);
+  --color-pink-600: oklch(59.1% 0.22 4.5);
+  
+  --color-red-600: oklch(56.1% 0.232 25.8);
+  --color-red-700: oklch(49% 0.206 25.8);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-inter {
+  font-family: var(--font-inter), sans-serif;
+}
+
+.font-poppins {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+/* Smooth transitions for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(13.1% 0.005 264.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(27% 0.009 256.8);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(39.8% 0.011 259.5);
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid oklch(61.2% 0.201 266.3);
+  outline-offset: 2px;
+}

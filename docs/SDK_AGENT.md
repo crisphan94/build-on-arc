@@ -1,4 +1,4 @@
-# METHOD 2 (MEDIUM): HYBRID - App Kit SDK + Custom Agent Contracts
+# SDK AGENT (MEDIUM): HYBRID - App Kit SDK + Custom Agent Contracts
 
 ## 📋 OVERVIEW
 
@@ -1555,7 +1555,7 @@ npx hardhat test
 ### README.md
 
 ````markdown
-# Method 2: Hybrid Approach - Production-Ready AI Agents
+# Sdk Agent: Hybrid Approach - Production-Ready AI Agents
 
 Enterprise-grade AI agent implementation combining Circle App Kit with custom smart contracts.
 
