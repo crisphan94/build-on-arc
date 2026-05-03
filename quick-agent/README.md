@@ -1,298 +1,406 @@
-# Quick Agent: Frontend-First Approach 🎨
+# 🤖 Quick Agent - AI Agent Deployment on Arc Network
 
-> **Difficulty:** ⭐⭐ Easy  
-> **Time:** 2-3 hours  
-> **Best For:** Beginners, quick prototypes, learning basics
+> Deploy autonomous AI agents with verifiable on-chain identity on Arc Network Testnet
 
-A simple, beginner-friendly way to build AI Agents on Arc Network focusing on beautiful UI first, minimal smart contract logic.
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.4-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue)](https://www.typescriptlang.org/)
+[![wagmi](https://img.shields.io/badge/wagmi-2.19.5-purple)](https://wagmi.sh/)
+[![RainbowKit](https://img.shields.io/badge/RainbowKit-2.2.10-orange)](https://www.rainbowkit.com/)
+[![Hardhat](https://img.shields.io/badge/Hardhat-3.4.2-yellow)](https://hardhat.org/)
+
+## 🌟 Features
+
+- **🚀 Quick Deployment**: Deploy AI agents in under 1 minute
+- **🔗 On-Chain Identity**: Verifiable agent registry on Arc Network
+- **📦 IPFS Storage**: Metadata and avatars stored on IPFS via Pinata
+- **💰 Low Cost**: ~0.01 USDC gas cost per deployment
+- **🎨 Modern UI**: Built with Tailwind CSS 4 + UI/UX Pro Max principles
+- **🔐 Wallet Connect**: Easy wallet integration with RainbowKit
+
+---
+
+## 📁 Project Structure
+
+```
+quick-agent/
+├── app/
+│   ├── api/
+│   │   ├── upload/          # IPFS avatar upload API
+│   │   └── upload-metadata/ # IPFS metadata upload API
+│   ├── globals.css          # Global styles + design system
+│   ├── layout.tsx           # Root layout with fonts
+│   └── page.tsx             # Main landing page + agent creation
+├── components/
+│   ├── ui/                  # Reusable UI components
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   └── input.tsx
+│   ├── header.tsx           # Navigation + wallet connect
+│   └── providers.tsx        # Web3 providers wrapper
+├── contracts/
+│   └── SimpleAgentRegistry.sol  # Smart contract
+├── lib/
+│   ├── contracts.ts         # Contract ABI + address
+│   ├── utils.ts             # Utility functions
+│   └── wagmi.ts             # Web3 configuration
+├── scripts/
+│   └── deploy.js            # Contract deployment script
+├── hardhat.config.js        # Hardhat configuration
+└── .env.local               # Environment variables
+```
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- [pnpm](https://pnpm.io/) package manager
-- MetaMask or compatible wallet
-- Arc testnet USDC for gas ([Get from faucet](https://discord.com/invite/buildonarc))
+- Node.js 20+ installed
+- pnpm package manager
+- MetaMask wallet with Arc Testnet configured
+- Arc Testnet USDC for gas fees
 
-### Installation
+### 1️⃣ Install Dependencies
 
-\`\`\`bash
-
-# 1. Install dependencies
-
+```bash
 pnpm install
+```
 
-# 2. Copy environment variables
+### 2️⃣ Configure Environment Variables
 
-cp .env.example .env
+Create `.env.local` file (see [ENV.md](./ENV.md) for details):
 
-# 3. Get WalletConnect Project ID (free)
+```bash
+# Arc Network (Pre-configured)
+NEXT_PUBLIC_CHAIN_ID=5042002
+NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 
-# Visit: https://cloud.walletconnect.com
+# WalletConnect (Optional)
+NEXT_PUBLIC_WC_PROJECT_ID=your_project_id
 
-# Add to .env: NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_id
+# Pinata IPFS (Required - Get from https://pinata.cloud)
+NEXT_PUBLIC_PINATA_API_KEY=your_api_key
+PINATA_SECRET_KEY=your_secret_key
 
-# 4. Start development server
+# Contract Address (Fill after deployment)
+NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS=
+```
 
+### 3️⃣ Deploy Smart Contract
+
+**Step 1: Get Arc Testnet USDC**
+
+Follow the [DEPLOYMENT.md](./DEPLOYMENT.md) guide to:
+
+- Add Arc Testnet to MetaMask
+- Get testnet USDC from faucet
+- Export your private key
+
+**Step 2: Add Private Key to `.env.local`**
+
+```bash
+DEPLOYER_PRIVATE_KEY=your_private_key_here
+```
+
+**Step 3: Deploy Contract**
+
+```bash
+npx hardhat run scripts/deploy.js --network arcTestnet
+```
+
+**Step 4: Copy Contract Address**
+
+After successful deployment, copy the contract address and add to `.env.local`:
+
+```bash
+NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS=0x1234...abcd
+```
+
+### 4️⃣ Start Development Server
+
+```bash
 pnpm dev
-\`\`\`
+```
 
-Visit [http://localhost:3000](http://localhost:3000) to see your app! 🎉
-
-## 📦 What's Included
-
-### Frontend Stack
-
-- **Next.js 16** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS 4** - Utility-first styling
-- **RainbowKit** - Beautiful wallet connection UI
-- **wagmi** - React hooks for Ethereum
-- **lucide-react** - Modern icon library
-
-### Smart Contract
-
-- **SimpleAgentRegistry.sol** - Minimal registry contract (~130 lines)
-  - Register agents with IPFS metadata
-  - Update agent information
-  - Query agents by owner
-  - Deactivate agents
-
-### Design System (UI/UX Pro Max)
-
-- **Dark theme** - Professional slate color palette
-- **Glassmorphism** - Modern frosted glass effects
-- **Smooth animations** - 200ms transitions throughout
-- **Typography** - Inter + Poppins font pairing
-- **Accent colors** - Indigo (#6366f1) primary
-- **Responsive** - Mobile-first design
-
-## 🛠️ Development Workflow
-
-### 1. Deploy Smart Contract
-
-\`\`\`bash
-
-# Add your private key to .env
-
-echo "PRIVATE_KEY=your_private_key_here" >> .env
-
-# Compile contract
-
-npx hardhat compile
-
-# Deploy to Arc Testnet
-
-npx hardhat run scripts/deploy.ts --network arcTestnet
-
-# Copy contract address to .env
-
-echo "NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS=0x..." >> .env
-\`\`\`
-
-### 2. Setup IPFS (Pinata)
-
-\`\`\`bash
-
-# Get free API keys at: https://app.pinata.cloud
-
-# Add to .env:
-
-echo "NEXT_PUBLIC_PINATA_API_KEY=your_key" >> .env
-echo "NEXT_PUBLIC_PINATA_SECRET_KEY=your_secret" >> .env
-\`\`\`
-
-### 3. Implement Agent Creation
-
-The basic structure is already set up in \`app/page.tsx\`. Next steps:
-
-1. **Add IPFS upload** - Install \`@pinata/sdk\` for metadata storage
-2. **Connect contract** - Use wagmi hooks to interact with registry
-3. **Handle transactions** - Show loading states and transaction feedback
-4. **Display agents** - Fetch and display registered agents
-
-## 📁 Project Structure
-
-\`\`\`
-quick-agent/
-├── app/
-│ ├── layout.tsx # Root layout with providers & fonts
-│ ├── page.tsx # Main landing page with agent form
-│ └── globals.css # Global styles & design tokens
-├── components/
-│ ├── header.tsx # Navigation with wallet button
-│ ├── providers.tsx # Web3 providers (Wagmi + RainbowKit)
-│ └── ui/ # Reusable UI components
-│ ├── button.tsx # Button with variants
-│ ├── card.tsx # Card with glassmorphism
-│ └── input.tsx # Form input component
-├── contracts/
-│ └── SimpleAgentRegistry.sol # Agent registry contract
-├── lib/
-│ ├── utils.ts # Utility functions (cn helper)
-│ └── wagmi.ts # Arc Network configuration
-└── scripts/
-└── deploy.ts # Deployment script
-\`\`\`
-
-## 🎨 UI Components
-
-### Button
-
-\`\`\`tsx
-import { Button } from "@/components/ui/button";
-
-<Button>Default</Button>
-<Button variant="outline">Outline</Button>
-<Button variant="ghost">Ghost</Button>
-<Button size="lg">Large Button</Button>
-\`\`\`
-
-### Card
-
-\`\`\`tsx
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
-<Card>
-  <CardHeader>
-    <CardTitle>Agent Name</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <p>Agent details here...</p>
-  </CardContent>
-</Card>
-\`\`\`
-
-### Input
-
-\`\`\`tsx
-import { Input } from "@/components/ui/input";
-
-<Input
-placeholder="Enter agent name"
-value={name}
-onChange={(e) => setName(e.target.value)}
-/>
-\`\`\`
-
-## 🔗 Arc Network Configuration
-
-\`\`\`typescript
-// lib/wagmi.ts
-export const arcTestnetChain = {
-id: 5042002,
-name: "Arc Testnet",
-nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
-rpcUrls: {
-default: { http: ["https://rpc.testnet.arc.network"] },
-public: { http: ["https://rpc.testnet.arc.network"] },
-},
-blockExplorers: {
-default: { name: "Arc Explorer", url: "https://testnet.arcscan.app" },
-},
-testnet: true,
-};
-\`\`\`
-
-## 📝 Smart Contract ABI
-
-After deploying, the contract ABI is available at:
-\`\`\`
-artifacts/contracts/SimpleAgentRegistry.sol/SimpleAgentRegistry.json
-\`\`\`
-
-Key functions:
-
-- \`registerAgent(metadataURI)\` - Create new agent
-- \`getAgent(agentId)\` - Get agent details
-- \`getAgentsByOwner(address)\` - Get all agents by owner
-- \`updateAgent(agentId, newMetadataURI)\` - Update metadata
-- \`totalAgents()\` - Get total agent count
-
-## 🧪 Testing
-
-\`\`\`bash
-
-# Run Hardhat tests
-
-npx hardhat test
-
-# Start local Hardhat node
-
-npx hardhat node
-
-# Deploy to local network (for testing)
-
-npx hardhat run scripts/deploy.ts --network localhost
-\`\`\`
-
-## 🚀 Deployment
-
-### Deploy to Production
-
-\`\`\`bash
-
-# Build Next.js app
-
-pnpm build
-
-# Deploy to Vercel (recommended)
-
-vercel deploy
-
-# Or deploy to any Node.js hosting
-
-pnpm start
-\`\`\`
-
-### Environment Variables for Production
-
-Make sure to set these in your hosting platform:
-
-- \`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID\`
-- \`NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS\`
-- \`NEXT_PUBLIC_PINATA_API_KEY\`
-- \`NEXT_PUBLIC_PINATA_SECRET_KEY\`
-
-## 📚 Learn More
-
-- [Arc Network Docs](https://docs.arc.network)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [RainbowKit Docs](https://rainbowkit.com)
-- [wagmi Docs](https://wagmi.sh)
-- [Hardhat Docs](https://hardhat.org)
-
-## 🎯 Next Steps
-
-1. **Complete IPFS integration** - Upload agent metadata to IPFS
-2. **Add image upload** - Allow users to upload agent avatars
-3. **Implement agent list** - Display all registered agents
-4. **Add filtering** - Filter agents by owner/status
-5. **Improve UX** - Add loading states, error handling, success toasts
-
-## ⚡ Pro Tips
-
-- Arc Network uses **USDC as gas token** (6 decimals, not 18!)
-- Use **Pinata** for free IPFS hosting (100GB free tier)
-- Test with **small amounts** first (~0.01 USDC per transaction)
-- Join [Arc Discord](https://discord.com/invite/buildonarc) for support
-
-## 🤝 Contributing
-
-This is a teaching project! Feel free to:
-
-- Open issues for bugs
-- Submit PRs for improvements
-- Share your deployed agents
-- Help others in discussions
-
-## 📄 License
-
-MIT License - see [LICENSE](../LICENSE) file for details
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-**Happy Building! 🎉**
+## 📚 Documentation
 
-Need help? Join the [Arc Network Discord](https://discord.com/invite/buildonarc)
+| Document                                     | Description                                               |
+| -------------------------------------------- | --------------------------------------------------------- |
+| [HUONG_DAN_DEPLOY.md](./HUONG_DAN_DEPLOY.md) | 🇻🇳 **Hướng dẫn deploy chi tiết bằng Tiếng Việt** (8 bước) |
+| [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)         | ⚡ **Quick reference 5 phút** (cho người đã biết)         |
+| [DEPLOYMENT.md](./DEPLOYMENT.md)             | Complete deployment guide (30+ steps, English)            |
+| [ENV.md](./ENV.md)                           | Environment variables setup guide                         |
+| [AVATAR_UPLOAD.md](./AVATAR_UPLOAD.md)       | Avatar upload feature documentation                       |
+
+---
+
+## 🔧 Tech Stack
+
+### Frontend
+
+- **Framework**: Next.js 16.2.4 (App Router)
+- **Language**: TypeScript 5.9.3
+- **Styling**: Tailwind CSS 4.2.4
+- **UI Components**: Radix UI + shadcn/ui
+- **Fonts**: Inter (body) + Poppins (headings)
+
+### Web3
+
+- **Wallet**: wagmi 2.19.5 + RainbowKit 2.2.10
+- **Blockchain**: viem 2.48.4
+- **Network**: Arc Testnet (Chain ID: 5042002)
+- **Gas Token**: USDC (6 decimals)
+
+### Smart Contracts
+
+- **Framework**: Hardhat 3.4.2
+- **Language**: Solidity 0.8.20
+- **Network**: Arc Network Testnet
+
+### Storage
+
+- **IPFS**: Pinata Cloud
+- **Metadata**: JSON on IPFS
+- **Assets**: Images on IPFS
+
+---
+
+## 🎨 Design System
+
+Built with **UI/UX Pro Max** principles:
+
+- **Colors**: Dark theme (slate-950) with indigo accents
+- **Typography**: Inter + Poppins from Google Fonts
+- **Animations**: 200ms transitions with reduced motion support
+- **Effects**: Glassmorphism, gradient backgrounds, backdrop blur
+- **Interactions**: Focus-visible states, hover effects, active scaling
+
+---
+
+## 🧪 How It Works
+
+### Frontend Flow
+
+1. **User connects wallet** via RainbowKit
+2. **Fills agent form** (name, description, avatar)
+3. **Avatar upload** to Pinata IPFS (if provided)
+4. **Metadata creation** (JSON with agent data)
+5. **Metadata upload** to Pinata IPFS
+6. **Smart contract call** (`createAgent`)
+7. **Transaction confirmation** on Arc Network
+8. **Success modal** with transaction hash
+
+### Smart Contract
+
+The `SimpleAgentRegistry` contract provides:
+
+```solidity
+// Create a new agent
+function createAgent(
+    string calldata name,
+    string calldata description,
+    string calldata avatarURI
+) external returns (uint256)
+
+// Get agent by ID
+function getAgent(uint256 agentId)
+    external view returns (Agent memory)
+
+// Get agent count
+function getAgentCount()
+    external view returns (uint256)
+
+// Get agents by owner
+function getAgentsByOwner(address owner)
+    external view returns (uint256[] memory)
+
+// Deactivate agent (owner only)
+function deactivateAgent(uint256 agentId) external
+```
+
+---
+
+## 🧑‍💻 Development
+
+### Build for Production
+
+```bash
+pnpm build
+```
+
+### Run Production Server
+
+```bash
+pnpm start
+```
+
+### Lint Code
+
+```bash
+pnpm lint
+```
+
+### Compile Contracts
+
+```bash
+npx hardhat compile
+```
+
+### Test Contracts (Coming Soon)
+
+```bash
+npx hardhat test
+```
+
+---
+
+## 🌐 Network Configuration
+
+### Arc Network Testnet
+
+| Property              | Value                           |
+| --------------------- | ------------------------------- |
+| **Network Name**      | Arc Network Testnet             |
+| **RPC URL**           | https://rpc.testnet.arc.network |
+| **Chain ID**          | 5042002                         |
+| **Currency Symbol**   | USDC                            |
+| **Currency Decimals** | 6                               |
+| **Block Explorer**    | https://testnet.arcscan.app     |
+
+### Add to MetaMask
+
+```javascript
+await window.ethereum.request({
+  method: 'wallet_addEthereumChain',
+  params: [
+    {
+      chainId: '0x4CE6D2', // 5042002 in hex
+      chainName: 'Arc Network Testnet',
+      nativeCurrency: {
+        name: 'USDC',
+        symbol: 'USDC',
+        decimals: 6,
+      },
+      rpcUrls: ['https://rpc.testnet.arc.network'],
+      blockExplorerUrls: ['https://testnet.arcscan.app'],
+    },
+  ],
+})
+```
+
+---
+
+## 🎯 API Endpoints
+
+### POST `/api/upload`
+
+Upload avatar image to IPFS via Pinata.
+
+**Request**: `multipart/form-data` with `file` field
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "ipfsHash": "Qm...",
+  "ipfsUrl": "ipfs://Qm...",
+  "gatewayUrl": "https://gateway.pinata.cloud/ipfs/Qm..."
+}
+```
+
+### POST `/api/upload-metadata`
+
+Upload metadata JSON to IPFS via Pinata.
+
+**Request**: `application/json`
+
+```json
+{
+  "name": "Trading Bot Alpha",
+  "description": "AI agent for trading",
+  "image": "ipfs://Qm...",
+  "createdAt": "2026-04-28T..."
+}
+```
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "ipfsHash": "Qm...",
+  "ipfsUrl": "ipfs://Qm...",
+  "gatewayUrl": "https://gateway.pinata.cloud/ipfs/Qm..."
+}
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Contract Not Deployed
+
+**Error**: `Contract not deployed yet. Please deploy the SimpleAgentRegistry contract first`
+
+**Solution**: Deploy contract using `npx hardhat run scripts/deploy.js --network arcTestnet`
+
+### Insufficient Funds
+
+**Error**: `Insufficient funds for gas`
+
+**Solution**: Get Arc Testnet USDC from faucet (see [DEPLOYMENT.md](./DEPLOYMENT.md))
+
+### IPFS Upload Failed
+
+**Error**: `Failed to upload to IPFS`
+
+**Solution**: Check Pinata API keys in `.env.local` (see [ENV.md](./ENV.md))
+
+### Wallet Not Connected
+
+**Error**: `Please connect your wallet first`
+
+**Solution**: Click "Connect Wallet" button in header and select MetaMask
+
+---
+
+## 📞 Support
+
+- **Arc Network Docs**: https://docs.arc.network
+- **Discord**: https://discord.com/invite/buildonarc
+- **Twitter**: [@BuildOnArc](https://twitter.com/BuildOnArc)
+
+---
+
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+---
+
+## 🎯 Roadmap
+
+- [ ] Agent dashboard with list view
+- [ ] Agent update functionality
+- [ ] Agent transfer/ownership management
+- [ ] Multiple network support
+- [ ] Agent analytics
+- [ ] IPFS metadata viewer
+- [ ] Contract verification on Arc Explorer
+- [ ] Unit tests for contracts
+- [ ] E2E tests for frontend
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+**Built with ❤️ on Arc Network**

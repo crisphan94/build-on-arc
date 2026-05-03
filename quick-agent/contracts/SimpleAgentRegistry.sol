@@ -3,138 +3,104 @@ pragma solidity ^0.8.20;
 
 /**
  * @title SimpleAgentRegistry
- * @notice A simple registry for AI Agents on Arc Network
- * @dev Frontend-first approach - minimal smart contract logic
+ * @notice Minimal agent registry for AI agents on Arc Network
+ * @dev Keep it simple for beginners to understand
  */
 contract SimpleAgentRegistry {
-    /// @notice Emitted when a new agent is registered
-    event AgentRegistered(
+    // Agent data structure
+    struct Agent {
+        string name;
+        string description;
+        string avatarURI;        // IPFS URI
+        address owner;
+        uint256 createdAt;
+        bool active;
+    }
+
+    // Storage
+    Agent[] public agents;
+    mapping(address => uint256[]) public ownerToAgents;
+
+    // Events
+    event AgentCreated(
         uint256 indexed agentId,
         address indexed owner,
-        string metadataURI,
-        uint256 timestamp
+        string name
     );
-
-    /// @notice Emitted when an agent's metadata is updated
-    event AgentUpdated(
+    
+    event AgentDeactivated(
         uint256 indexed agentId,
-        string newMetadataURI,
-        uint256 timestamp
+        address indexed owner
     );
 
-    /// @notice Agent data structure
-    struct Agent {
-        uint256 id;
-        address owner;
-        string metadataURI; // IPFS hash with agent details
-        uint256 createdAt;
-        uint256 updatedAt;
-        bool isActive;
-    }
-
-    /// @notice Counter for agent IDs
-    uint256 private _agentIdCounter;
-
-    /// @notice Mapping from agent ID to Agent struct
-    mapping(uint256 => Agent) private _agents;
-
-    /// @notice Mapping from owner to their agent IDs
-    mapping(address => uint256[]) private _ownerAgents;
-
     /**
-     * @notice Register a new AI agent
-     * @param metadataURI IPFS URI containing agent metadata (name, description, capabilities, etc.)
-     * @return agentId The unique ID of the newly created agent
+     * @notice Create a new agent
+     * @param name Agent name
+     * @param description Agent description
+     * @param avatarURI IPFS URI for avatar
      */
-    function registerAgent(string memory metadataURI)
-        external
-        returns (uint256 agentId)
-    {
-        require(bytes(metadataURI).length > 0, "Metadata URI cannot be empty");
+    function createAgent(
+        string calldata name,
+        string calldata description,
+        string calldata avatarURI
+    ) external returns (uint256) {
+        require(bytes(name).length > 0, "Name required");
 
-        agentId = ++_agentIdCounter;
+        uint256 agentId = agents.length;
 
-        _agents[agentId] = Agent({
-            id: agentId,
+        agents.push(Agent({
+            name: name,
+            description: description,
+            avatarURI: avatarURI,
             owner: msg.sender,
-            metadataURI: metadataURI,
             createdAt: block.timestamp,
-            updatedAt: block.timestamp,
-            isActive: true
-        });
+            active: true
+        }));
 
-        _ownerAgents[msg.sender].push(agentId);
+        ownerToAgents[msg.sender].push(agentId);
 
-        emit AgentRegistered(agentId, msg.sender, metadataURI, block.timestamp);
+        emit AgentCreated(agentId, msg.sender, name);
+        return agentId;
     }
 
     /**
-     * @notice Update an existing agent's metadata
-     * @param agentId The ID of the agent to update
-     * @param newMetadataURI New IPFS URI with updated metadata
+     * @notice Get agent by ID
      */
-    function updateAgent(uint256 agentId, string memory newMetadataURI)
+    function getAgent(uint256 agentId)
         external
+        view
+        returns (Agent memory)
     {
-        require(_agents[agentId].owner == msg.sender, "Not the agent owner");
-        require(_agents[agentId].isActive, "Agent is not active");
-        require(bytes(newMetadataURI).length > 0, "Metadata URI cannot be empty");
-
-        _agents[agentId].metadataURI = newMetadataURI;
-        _agents[agentId].updatedAt = block.timestamp;
-
-        emit AgentUpdated(agentId, newMetadataURI, block.timestamp);
+        require(agentId < agents.length, "Invalid ID");
+        return agents[agentId];
     }
 
     /**
-     * @notice Deactivate an agent (doesn't delete, just marks inactive)
-     * @param agentId The ID of the agent to deactivate
+     * @notice Get total number of agents
      */
-    function deactivateAgent(uint256 agentId) external {
-        require(_agents[agentId].owner == msg.sender, "Not the agent owner");
-        require(_agents[agentId].isActive, "Agent already inactive");
-
-        _agents[agentId].isActive = false;
-        _agents[agentId].updatedAt = block.timestamp;
+    function getAgentCount() external view returns (uint256) {
+        return agents.length;
     }
 
     /**
-     * @notice Get agent details by ID
-     * @param agentId The ID of the agent
-     * @return Agent struct with all details
-     */
-    function getAgent(uint256 agentId) external view returns (Agent memory) {
-        require(_agents[agentId].id != 0, "Agent does not exist");
-        return _agents[agentId];
-    }
-
-    /**
-     * @notice Get all agent IDs owned by an address
-     * @param owner The address of the owner
-     * @return Array of agent IDs
+     * @notice Get agents by owner
      */
     function getAgentsByOwner(address owner)
         external
         view
         returns (uint256[] memory)
     {
-        return _ownerAgents[owner];
+        return ownerToAgents[owner];
     }
 
     /**
-     * @notice Get total number of agents created
-     * @return Total agent count
+     * @notice Deactivate an agent (only owner)
      */
-    function totalAgents() external view returns (uint256) {
-        return _agentIdCounter;
-    }
+    function deactivateAgent(uint256 agentId) external {
+        require(agentId < agents.length, "Invalid ID");
+        require(agents[agentId].owner == msg.sender, "Not owner");
 
-    /**
-     * @notice Check if an agent is active
-     * @param agentId The ID of the agent
-     * @return True if agent is active
-     */
-    function isAgentActive(uint256 agentId) external view returns (bool) {
-        return _agents[agentId].isActive;
+        agents[agentId].active = false;
+        emit AgentDeactivated(agentId, msg.sender);
     }
 }

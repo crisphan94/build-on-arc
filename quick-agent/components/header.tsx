@@ -1,48 +1,34 @@
-"use client";
-
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Sparkles } from "lucide-react";
-import Link from "next/link";
+import Link from 'next/link'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { Sparkles } from 'lucide-react'
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <header className='sticky top-0 z-50 border-b border-slate-800 bg-slate-950/80 backdrop-blur-lg'>
+      <div className='container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8'>
+        {/* Logo */}
         <Link
-          href="/"
-          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+          href='/'
+          className='flex items-center gap-2 font-poppins text-xl font-bold transition-colors duration-200 hover:text-indigo-400'
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
-            <Sparkles className="h-6 w-6 text-white" />
+          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br from-indigo-600 to-purple-600 shadow-lg shadow-indigo-600/30'>
+            <Sparkles className='h-5 w-5' />
           </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold font-poppins">AI Agent</span>
-            <span className="text-xs text-slate-400">Arc Network</span>
-          </div>
+          <span className='hidden sm:inline'>Arc Agents</span>
         </Link>
 
-        <nav className="flex items-center gap-6">
+        {/* Navigation */}
+        <nav className='flex items-center gap-4'>
           <Link
-            href="/#agents"
-            className="text-sm font-medium text-slate-300 transition-colors hover:text-white"
+            href='https://docs.arc.network'
+            target='_blank'
+            className='hidden cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 hover:bg-slate-800 sm:inline-flex'
           >
-            Agents
-          </Link>
-          <Link
-            href="/#create"
-            className="text-sm font-medium text-slate-300 transition-colors hover:text-white"
-          >
-            Create
-          </Link>
-          <Link
-            href="/#about"
-            className="text-sm font-medium text-slate-300 transition-colors hover:text-white"
-          >
-            About
+            Docs
           </Link>
           <ConnectButton />
         </nav>
       </div>
     </header>
-  );
+  )
 }

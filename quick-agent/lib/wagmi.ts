@@ -1,50 +1,39 @@
-import { http, createConfig } from "wagmi";
-import { arcTestnet } from "wagmi/chains";
-import { injected, walletConnect } from "wagmi/connectors";
+import { http, createConfig } from 'wagmi'
+import { injected } from 'wagmi/connectors'
 
-// Define Arc Testnet chain
+// Arc Testnet Chain Configuration
 export const arcTestnetChain = {
   id: 5042002,
-  name: "Arc Testnet",
-  network: "arc-testnet",
+  name: 'Arc Testnet',
   nativeCurrency: {
+    name: 'USDC',
+    symbol: 'USDC',
     decimals: 6,
-    name: "USDC",
-    symbol: "USDC",
   },
   rpcUrls: {
-    default: {
-      http: ["https://rpc.testnet.arc.network"],
-    },
-    public: {
-      http: ["https://rpc.testnet.arc.network"],
-    },
+    default: { http: ['https://rpc.testnet.arc.network'] },
+    public: { http: ['https://rpc.testnet.arc.network'] },
   },
   blockExplorers: {
     default: {
-      name: "ArcScan",
-      url: "https://testnet.arcscan.app",
+      name: 'ArcScan',
+      url: 'https://testnet.arcscan.app',
     },
   },
   testnet: true,
-} as const;
+} as const
 
-// Wagmi config
+// Wagmi Configuration
 export const config = createConfig({
   chains: [arcTestnetChain],
-  connectors: [
-    injected(),
-    walletConnect({
-      projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "",
-    }),
-  ],
   transports: {
     [arcTestnetChain.id]: http(),
   },
-});
+  connectors: [injected({ target: 'metaMask' })],
+})
 
-declare module "wagmi" {
+declare module 'wagmi' {
   interface Register {
-    config: typeof config;
+    config: typeof config
   }
 }
