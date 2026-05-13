@@ -10,6 +10,7 @@ import { ServicesGrid, type PaymentRecord } from '@/components/services-grid'
 import { ActivityFeed } from '@/components/activity-feed'
 import { HowItWorks } from '@/components/how-it-works'
 import { PaymentTicker } from '@/components/payment-ticker'
+import { CctpBridgeCard } from '@/components/cctp-bridge-card'
 import { Badge } from '@/components/ui/badge'
 
 const STATS = [
@@ -166,7 +167,14 @@ export default function HomePage() {
                 refetchBalanceRef.current = fn
               }}
             />
-            <ServicesGrid onPaymentSuccess={handlePaymentSuccess} />
+            <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+              <div className='lg:col-span-2'>
+                <ServicesGrid onPaymentSuccess={handlePaymentSuccess} />
+              </div>
+              <div>
+                <CctpBridgeCard />
+              </div>
+            </div>
             <ActivityFeed payments={payments} />
           </div>
         ) : null}

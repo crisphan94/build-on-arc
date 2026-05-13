@@ -28,6 +28,18 @@ export function Header() {
         {/* Nav + Wallet */}
         <nav className='flex items-center gap-3'>
           <Link
+            href='/agent'
+            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] cursor-pointer'
+          >
+            Agent
+          </Link>
+          <Link
+            href='/architecture'
+            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] cursor-pointer'
+          >
+            Architecture
+          </Link>
+          <Link
             href='https://developers.circle.com/gateway/nanopayments'
             target='_blank'
             rel='noopener noreferrer'

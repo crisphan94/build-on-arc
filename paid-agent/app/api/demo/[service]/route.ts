@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BatchFacilitatorClient } from '@circle-fin/x402-batching/server'
+import { createGroq } from '@ai-sdk/groq'
+import { generateText } from 'ai'
 import { SERVICES } from '@/lib/services'
 import { addGlobalPayment } from '@/lib/global-payments'
 import {
@@ -154,7 +156,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ serv
   })
 
   // Payment settled — return real service data
-  const data = await fetchServiceData(serviceId)
+  const data = await fetchServiceData(serviceId, req)
 
   const paymentResponse = Buffer.from(
     JSON.stringify({
@@ -173,7 +175,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ serv
   })
 }
 
-async function fetchServiceData(serviceId: string): Promise<Record<string, unknown>> {
+// Shared Groq client — returns null on quota error instead of throwing
+async function geminiGenerate(prompt: string): Promise<string | null> {
+  try {
+    const groq = createGroq({ apiKey: process.env.GROQ_API_KEY ?? '' })
+    const { text } = await generateText({
+      model: groq('llama-3.1-8b-instant'),
+      prompt,
+    })
+    return text
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : ''
+    if (msg.includes('quota') || msg.includes('rate_limit') || msg.includes('429')) {
+      console.warn('[groq] quota exceeded:', msg.slice(0, 120))
+      return null
+    }
+    throw err
+  }
+}
+
+async function fetchServiceData(
+  serviceId: string,
+  req: NextRequest,
+): Promise<Record<string, unknown>> {
+  const q = req.nextUrl.searchParams
+
   switch (serviceId) {
     case 'market-data': {
       try {
@@ -230,65 +256,71 @@ async function fetchServiceData(serviceId: string): Promise<Record<string, unkno
     }
 
     case 'ai-text': {
-      const topics = [
-        'Arc Network enables gasless micropayments via Circle Gateway batched settlement',
-        'x402 protocol turns any HTTP endpoint into a paid service using HTTP 402 status',
-        'EIP-3009 TransferWithAuthorization allows offchain payment signing at zero gas cost',
-        'Batched settlement aggregates thousands of payment authorizations into one onchain tx',
-        'Agentic commerce requires payment rails that can move value continuously and autonomously',
-      ]
-      const idx = Math.floor(Date.now() / 15000) % topics.length
+      const topic = q.get('topic') ?? 'Arc Network and Circle Gateway nanopayments'
+      const text = await geminiGenerate(
+        `Write a concise, insightful paragraph (3-5 sentences) analyzing: ${topic}. Be factual and informative.`,
+      )
+      if (!text) return { error: 'Groq rate limit exceeded. Retry in a moment.' }
       return {
-        text: `${topics[idx]}. This response was unlocked by a real nanopayment processed through Circle Gateway on Arc Testnet. The EIP-3009 authorization was signed by your wallet and settled in a batch — zero gas fees, settlement guaranteed.`,
-        tokens: 58 + (Date.now() % 40),
-        model: 'gateway-demo-v1',
+        text,
+        topic,
+        tokens: text.split(' ').length,
+        model: 'gemini-2.0-flash-lite',
         timestamp: Date.now(),
       }
     }
 
     case 'translate': {
+      const text = q.get('text') ?? 'Hello, world!'
+      const targetLanguage = q.get('targetLanguage') ?? 'Vietnamese'
+      const translated = await geminiGenerate(
+        `Translate the following text to ${targetLanguage}. Reply with ONLY the translated text, nothing else.\n\nText: ${text}`,
+      )
+      if (!translated) return { error: 'Groq rate limit exceeded. Retry in a moment.' }
       return {
-        original:
-          'Arc Network enables efficient agent-to-agent payments via Circle Gateway Nanopayments.',
-        translated:
-          'Arc Network cho phép thanh toán hiệu quả giữa các tác nhân thông qua Nanopayments của Circle Gateway.',
-        confidence: 0.96,
-        from: 'en',
-        to: 'vi',
-        characters: 89,
+        original: text,
+        translated: translated.trim(),
+        from: 'auto',
+        to: targetLanguage,
+        characters: text.length,
         timestamp: Date.now(),
       }
     }
 
     case 'code-review': {
-      const issueCount = Date.now() % 3
-      return {
-        issues: issueCount,
-        severity: issueCount === 0 ? 'none' : issueCount === 1 ? 'low' : 'medium',
-        score: Math.floor(85 + (Date.now() % 15)),
-        suggestions:
-          issueCount > 0
-            ? [
-                'Add input validation at API boundaries (OWASP A03)',
-                'Use const for immutable bindings to prevent accidental reassignment',
-              ].slice(0, issueCount)
-            : [],
-        linesAnalyzed: 50 + Math.floor(Date.now() % 200),
-        timestamp: Date.now(),
+      const code = q.get('code') ?? '// no code provided'
+      const raw = await geminiGenerate(
+        `Review this code for quality, bugs, and security issues. Respond in JSON with fields: score (0-100), severity ("none"|"low"|"medium"|"high"), issues (number), suggestions (array of strings, max 3).\n\nCode:\n${code}`,
+      )
+      if (!raw) return { error: 'Groq rate limit exceeded. Retry in a moment.' }
+      try {
+        const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim()) as {
+          score: number
+          severity: string
+          issues: number
+          suggestions: string[]
+        }
+        return { ...parsed, linesAnalyzed: code.split('\n').length, timestamp: Date.now() }
+      } catch {
+        return { error: 'Failed to parse code review response' }
       }
     }
 
     case 'sentiment': {
-      const scores = [0.72, 0.85, 0.91, 0.63, 0.78]
-      const score = scores[Math.floor(Date.now() / 8000) % scores.length]
-      return {
-        label: score > 0.7 ? 'positive' : score > 0.4 ? 'neutral' : 'negative',
-        score: parseFloat(score.toFixed(2)),
-        entities: [
-          { entity: 'Arc Network', sentiment: 'very positive', score: 0.94 },
-          { entity: 'Circle Gateway', sentiment: 'positive', score: 0.88 },
-        ],
-        timestamp: Date.now(),
+      const text = q.get('text') ?? 'No text provided'
+      const raw = await geminiGenerate(
+        `Analyze the sentiment of this text. Respond in JSON with fields: label ("positive"|"negative"|"neutral"), score (0.0-1.0), reason (one sentence explanation).\n\nText: ${text}`,
+      )
+      if (!raw) return { error: 'Groq rate limit exceeded. Retry in a moment.' }
+      try {
+        const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim()) as {
+          label: string
+          score: number
+          reason: string
+        }
+        return { ...parsed, input: text, timestamp: Date.now() }
+      } catch {
+        return { error: 'Failed to parse sentiment response' }
       }
     }
 

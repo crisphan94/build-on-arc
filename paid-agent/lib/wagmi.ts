@@ -23,6 +23,7 @@ export const arcTestnet = {
 } as const
 
 export const config = createConfig({
+  ssr: true,
   chains: [arcTestnet],
   transports: {
     [arcTestnet.id]: http(),

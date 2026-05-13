@@ -9,18 +9,27 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.72",
+    "@ai-sdk/groq": "^3.0.39",
+    "@ai-sdk/react": "^3.0.179",
+    "@circle-fin/developer-controlled-wallets": "^10.3.1",
     "@circle-fin/x402-batching": "latest",
+    "@google/generative-ai": "^0.24.1",
     "@rainbow-me/rainbowkit": "2.2.10",
     "@tanstack/react-query": "5.100.5",
+    "@x402/core": "^2.11.0",
+    "@x402/evm": "^2.11.0",
+    "ai": "^6.0.177",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "0.513.0",
-    "next": "15.3.1",
+    "next": "16.2.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "tailwind-merge": "3.0.0",
     "viem": "2.48.4",
-    "wagmi": "2.19.5"
+    "wagmi": "2.19.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

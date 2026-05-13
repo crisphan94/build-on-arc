@@ -1,4 +1,4 @@
-# NanoPay
+# NanoPay Hub
 
 > **Marketplace demo cho Circle Gateway Nanopayments trên Arc Testnet**
 
@@ -72,3 +72,99 @@ pnpm dev
 - [Seller Quickstart](https://developers.circle.com/gateway/nanopayments/quickstarts/seller)
 - [USDC Testnet Faucet](https://faucet.circle.com)
 - [Arc Testnet Explorer](https://testnet.arcscan.app)
+
+---
+
+## Phase 2: AI Agent Layer (Hackathon Track 4)
+
+> **Stablecoins Commerce Stack Challenge — Track 4: Best Agentic Economy Experience on Arc**
+
+### Problem
+
+Current app is a **manual marketplace** — user clicks each API call individually.
+Track 4 requires an **AI agent that autonomously decides and pays** without user confirmation per step.
+
+### What to Add
+
+#### Critical: Server-side payment signing
+
+Currently `useGatewayPay.ts` uses wagmi's `useSignTypedData` — MetaMask signs in the browser.
+An agent cannot popup MetaMask. Need a server-side signer:
+
+- `lib/agent-wallet.ts` — viem walletClient with `AGENT_PRIVATE_KEY`, signs EIP-3009 server-side
+- `lib/agent-pay.ts` — server-side equivalent of `useGatewayPay`, no browser required
+
+#### AI Agent API route
+
+- `app/api/agent/route.ts` — `POST`, receives `{ task, budget }`, uses Vercel AI SDK `streamText()`
+- 6 tools defined (one per paid API), each `tool.execute()` calls x402 endpoint + signs autonomously
+- Budget enforcement: agent tracks total spent, stops when limit reached
+
+#### Chat UI
+
+- `app/agent/page.tsx` — `useChat()` from AI SDK UI
+- User types natural language task: _"Analyze BTC market sentiment"_
+- Streams agent thinking + each payment step in realtime
+- Shows budget remaining, payment receipt per tool call
+
+### Autonomous Flow
+
+```
+User: "Give me a full BTC market analysis"
+        │
+        ▼
+POST /api/agent  (Vercel AI SDK streamText)
+        │
+        ├── LLM decides: need marketData + sentiment + aiText
+        │
+        ├── tool: callMarketData  → agent-wallet signs EIP-3009 (server-side, no MetaMask)
+        │                          → POST /api/demo/market-data with payment header
+        │                          → Circle Gateway settles → returns price data
+        │
+        ├── tool: callSentiment   → same flow, -$1 USDC
+        │
+        ├── tool: callAIText      → same flow, -$1 USDC, synthesizes final report
+        │
+        └── LLM streams final report to user
+            Total: $3 USDC spent autonomously, zero MetaMask popups
+```
+
+### Files to Create / Modify
+
+| File                           | Action | Description                                         |
+| ------------------------------ | ------ | --------------------------------------------------- |
+| `lib/agent-wallet.ts`          | NEW    | viem walletClient, server-side EIP-3009 signing     |
+| `lib/agent-pay.ts`             | NEW    | server-side payment flow (no browser/wagmi)         |
+| `app/api/agent/route.ts`       | NEW    | streamText + 6 tools + budget enforcement           |
+| `app/agent/page.tsx`           | NEW    | Chat UI with useChat(), payment log, budget tracker |
+| `components/agent-chat.tsx`    | NEW    | Chat component with tool call visualization         |
+| `components/payment-steps.tsx` | NEW    | Realtime display of agent payment steps             |
+| `.env.local`                   | UPDATE | Add `AGENT_PRIVATE_KEY`, `GEMINI_API_KEY`           |
+
+### New Dependencies
+
+```bash
+pnpm add ai @ai-sdk/google   # Gemini free tier (1M tokens/day)
+# OR
+pnpm add ai @ai-sdk/openai   # OpenAI (paid, ~$0.002/1K tokens)
+```
+
+**Recommended: Google Gemini** — free tier sufficient for demo, key at [aistudio.google.com](https://aistudio.google.com).
+
+### New Environment Variables
+
+| Variable            | Description                                             | Required |
+| ------------------- | ------------------------------------------------------- | -------- |
+| `AGENT_PRIVATE_KEY` | EOA private key for agent-initiated payments            | Yes      |
+| `AGENT_ADDRESS`     | Corresponding address (pre-funded with USDC in Gateway) | Yes      |
+| `GEMINI_API_KEY`    | Google AI Studio API key (free)                         | Yes      |
+
+### Demo Scenario (for submission video)
+
+1. User sets budget: **$10 USDC max**
+2. User types: _"Research and summarize BTC outlook"_
+3. Agent calls Market Data API → pays $1 → receives price data
+4. Agent calls Sentiment Analysis API → pays $1 → receives sentiment score
+5. Agent calls AI Text Generation API → pays $1 → synthesizes report
+6. User sees: full report + payment receipt showing 3× $1 charges + $7 remaining budget
+7. Gateway balance decreases $3 in realtime on the dashboard
