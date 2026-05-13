@@ -202,41 +202,182 @@ async function fetchServiceData(
 
   switch (serviceId) {
     case 'market-data': {
+      // Known common mappings for fast lookup (no extra API call needed)
+      const SYMBOL_TO_ID: Record<string, string> = {
+        BTC: 'bitcoin',
+        ETH: 'ethereum',
+        USDC: 'usd-coin',
+        USDT: 'tether',
+        BNB: 'binancecoin',
+        SOL: 'solana',
+        ADA: 'cardano',
+        XRP: 'ripple',
+        DOGE: 'dogecoin',
+        DOT: 'polkadot',
+        MATIC: 'matic-network',
+        POL: 'matic-network',
+        AVAX: 'avalanche-2',
+        LINK: 'chainlink',
+        UNI: 'uniswap',
+        ATOM: 'cosmos',
+        LTC: 'litecoin',
+        BCH: 'bitcoin-cash',
+        NEAR: 'near',
+        APT: 'aptos',
+        ARB: 'arbitrum',
+        OP: 'optimism',
+        TRX: 'tron',
+        SHIB: 'shiba-inu',
+        PEPE: 'pepe',
+        TON: 'the-open-network',
+        SUI: 'sui',
+        SEI: 'sei-network',
+        INJ: 'injective-protocol',
+        HBAR: 'hedera-hashgraph',
+        ICP: 'internet-computer',
+        FIL: 'filecoin',
+        VET: 'vechain',
+        ALGO: 'algorand',
+        XLM: 'stellar',
+        SAND: 'the-sandbox',
+        MANA: 'decentraland',
+        AXS: 'axie-infinity',
+        CRO: 'crypto-com-chain',
+        FTM: 'fantom',
+        EGLD: 'elrond-erd-2',
+        THETA: 'theta-token',
+        FLOW: 'flow',
+        RUNE: 'thorchain',
+        BLUR: 'blur',
+        MKR: 'maker',
+        COMP: 'compound-governance-token',
+        AAVE: 'aave',
+        SNX: 'havven',
+        CRV: 'curve-dao-token',
+        LDO: 'lido-dao',
+        RPL: 'rocket-pool',
+        GMX: 'gmx',
+        PENDLE: 'pendle',
+        WIF: 'dogwifcoin',
+        BONK: 'bonk',
+        FLOKI: 'floki',
+        BRETT: 'brett',
+        MOG: 'mog-coin',
+      }
+
+      // Dynamically resolve unknown symbols via CoinGecko search API
+      async function resolveSymbol(sym: string): Promise<string | null> {
+        if (SYMBOL_TO_ID[sym]) return SYMBOL_TO_ID[sym]
+        try {
+          const searchRes = await fetch(
+            `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(sym)}`,
+          )
+          const searchData = (await searchRes.json()) as {
+            coins?: { id: string; symbol: string; market_cap_rank: number | null }[]
+          }
+          // Find exact symbol match, prefer higher market cap rank (lower number = bigger)
+          const matches = (searchData.coins ?? []).filter((c) => c.symbol.toUpperCase() === sym)
+          if (matches.length === 0) return null
+          // Sort by market_cap_rank ascending (null last)
+          matches.sort((a, b) => {
+            if (a.market_cap_rank === null) return 1
+            if (b.market_cap_rank === null) return -1
+            return a.market_cap_rank - b.market_cap_rank
+          })
+          return matches[0].id
+        } catch {
+          return null
+        }
+      }
+
+      // Parse requested coins from query param, fallback to defaults
+      const coinParam = q.get('coins') ?? ''
+      const requestedSymbols = coinParam
+        .split(',')
+        .map((s) => s.trim().toUpperCase())
+        .filter((s) => s && s !== 'UNDEFINED' && s.length > 0)
+
+      if (requestedSymbols.length === 0) {
+        return { error: 'No coin symbols provided. Pass ?coins=BTC or ?coins=TON,SOL' }
+      }
+
+      // Resolve all symbols (parallel for unknowns)
+      const resolved: Record<string, string | null> = {}
+      await Promise.all(
+        requestedSymbols.map(async (sym) => {
+          resolved[sym] = await resolveSymbol(sym)
+        }),
+      )
+
+      const idsToFetch = [...new Set(Object.values(resolved).filter(Boolean) as string[])]
+
+      // Fallback if nothing resolved
+      if (idsToFetch.length === 0) {
+        return {
+          error: `Could not find any of the requested symbols: ${requestedSymbols.join(', ')}`,
+        }
+      }
+
       try {
         const res = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,usd-coin&vs_currencies=usd&include_24hr_change=true',
+          `https://api.coingecko.com/api/v3/simple/price?ids=${idsToFetch.join(',')}&vs_currencies=usd&include_24hr_change=true`,
           { next: { revalidate: 60 } },
         )
         const gecko = (await res.json()) as Record<string, Record<string, number>>
-        return {
-          BTC: {
-            price: gecko.bitcoin?.usd,
-            change24h: parseFloat((gecko.bitcoin?.usd_24h_change ?? 0).toFixed(2)),
-          },
-          ETH: {
-            price: gecko.ethereum?.usd,
-            change24h: parseFloat((gecko.ethereum?.usd_24h_change ?? 0).toFixed(2)),
-          },
-          USDC: { price: gecko['usd-coin']?.usd ?? 1.0, change24h: 0 },
-          source: 'CoinGecko',
-          timestamp: Date.now(),
+
+        // Build result keyed by ticker symbol
+        const prices: Record<string, unknown> = {}
+        for (const sym of requestedSymbols) {
+          const id = resolved[sym]
+          if (!id) {
+            prices[sym] = { error: `Symbol "${sym}" not found on CoinGecko` }
+          } else if (gecko[id]) {
+            prices[sym] = {
+              price: gecko[id].usd,
+              change24h: parseFloat((gecko[id].usd_24h_change ?? 0).toFixed(2)),
+            }
+          } else {
+            prices[sym] = { error: 'Price data unavailable' }
+          }
         }
+
+        return { ...prices, source: 'CoinGecko', timestamp: Date.now() }
       } catch {
         return { error: 'Failed to fetch market data from CoinGecko' }
       }
     }
 
     case 'weather': {
+      const locationQuery = q.get('location') ?? 'Ho Chi Minh City'
       try {
-        const res = await fetch(
-          'https://api.open-meteo.com/v1/forecast?latitude=10.8231&longitude=106.6297&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia/Ho_Chi_Minh&forecast_days=3',
+        // Step 1: geocode the location name → lat/lng
+        const geoRes = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationQuery)}&count=1&language=en&format=json`,
         )
-        const weather = (await res.json()) as {
+        const geoData = (await geoRes.json()) as {
+          results?: {
+            name: string
+            country: string
+            latitude: number
+            longitude: number
+            timezone: string
+          }[]
+        }
+        const place = geoData.results?.[0]
+        if (!place) {
+          return { error: `Location "${locationQuery}" not found. Try a major city name.` }
+        }
+
+        // Step 2: fetch weather with actual coordinates
+        const weatherRes = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(place.timezone)}&forecast_days=3`,
+        )
+        const weather = (await weatherRes.json()) as {
           current: { temperature_2m: number; relative_humidity_2m: number; weather_code: number }
           daily: { time: string[]; temperature_2m_max: number[]; temperature_2m_min: number[] }
         }
         return {
-          location: 'Ho Chi Minh City',
+          location: `${place.name}, ${place.country}`,
           current: {
             temp: weather.current?.temperature_2m,
             humidity: weather.current?.relative_humidity_2m,

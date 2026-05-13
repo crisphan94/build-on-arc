@@ -18,8 +18,8 @@ import { AgentMessage } from '@/components/agent-message'
 
 const SUGGESTED_TASKS = [
   'What is the weather like in Da Nang City today?',
-  'Which token is pumping the hardest today?',
   'Give me a full BTC market analysis with sentiment',
+  'Which token is pumping the hardest today?',
   'Analyze the current crypto market and summarize key trends',
 ]
 

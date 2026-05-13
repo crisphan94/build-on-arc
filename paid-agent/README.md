@@ -1,170 +1,188 @@
-# NanoPay Hub
+# AgentPay — AI Agentic Economy on Arc Testnet
 
-> **Marketplace demo cho Circle Gateway Nanopayments trên Arc Testnet**
+> **Stablecoins Commerce Stack Challenge — Track 4: Best Agentic Economy Experience on Arc**
+> Prize: $4,000 USDC (1st) / $2,000 USDC (2nd)
 
-Multi-user web app cho phép connect ví và thực hiện gasless USDC micropayments thông qua Circle Gateway x402 protocol.
+An autonomous AI agent that researches, decides, and **pays for every answer** using USDC nanopayments on Arc Testnet — powered by Circle Gateway, Circle Developer-Controlled Wallets, and the x402 protocol.
+
+---
+
+## What It Does
+
+1. User types a natural language question (crypto prices, weather, code review, translation, etc.)
+2. Agent autonomously selects the right paid API tool
+3. Agent signs an EIP-3009 payment authorization **server-side** (no MetaMask popup)
+4. Circle Gateway settles the micropayment on Arc Testnet
+5. Agent receives real data and answers the user
+6. Every answer costs $1 USDC — deducted from a pre-set budget
+
+---
+
+## Circle Products Used
+
+| Product                                 | How Used                                                                                                                                      |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Circle Gateway + Nanopayments**       | x402 HTTP payment protocol — agent pays $1 USDC per API call, settled on Arc Testnet via `BatchFacilitatorClient`                             |
+| **Circle Developer-Controlled Wallets** | Agent's private key managed by Circle HSM via `@circle-fin/developer-controlled-wallets` — signs EIP-712 typed data without exposing raw keys |
+| **USDC on Arc Testnet**                 | Settlement rail for all agent-executed payments (Chain ID 5042002)                                                                            |
+| **CCTP + Bridge Kit**                   | UI for cross-chain USDC deposit to Arc Testnet from ETH Sepolia, AVAX Fuji, Base Sepolia, Polygon Amoy                                        |
+
+---
 
 ## Tech Stack
 
-- **Next.js 15** — App Router, API Routes
-- **wagmi + RainbowKit** — Wallet connection (MetaMask, WalletConnect)
-- **@circle-fin/x402-batching** — Circle Gateway SDK
-- **Tailwind CSS v4** — Glassmorphism dark UI
-- **viem** — EVM interaction
+- **Next.js 15** — App Router, API Routes, Server Components
+- **AI SDK v6 (`ai`)** — `streamText`, `tool`, `stepCountIs` for agentic loop
+- **@ai-sdk/groq** — `llama-3.3-70b-versatile` (agent), `llama-3.1-8b-instant` (services)
+- **@circle-fin/x402-batching** — Circle Gateway `BatchFacilitatorClient`
+- **@circle-fin/developer-controlled-wallets** — Circle Wallets API for secure agent signing
+- **viem** — EIP-3009 signing fallback, on-chain balance reads
+- **wagmi + RainbowKit** — User wallet connection
+- **Tailwind CSS v4 + shadcn/ui** — Glassmorphism dark UI
 
-## Features
+---
 
-| Feature              | Mô tả                                    |
-| -------------------- | ---------------------------------------- |
-| Wallet Connect       | MetaMask, WalletConnect trên Arc Testnet |
-| Gateway Balance      | Xem USDC balance trong Circle Gateway    |
-| Deposit              | Nạp USDC vào Gateway (1 lần, có gas)     |
-| Pay & Use            | Thanh toán gasless qua x402 protocol     |
-| Services Marketplace | 6 paid API services demo                 |
-| Activity Feed        | Lịch sử thanh toán                       |
-
-## Cài đặt & Chạy
+## Setup
 
 ```bash
 cd paid-agent
 pnpm install
 cp .env.example .env.local
-# Sửa .env.local với private key của bạn
+# Fill in .env.local (see below)
 pnpm dev
 ```
 
-## Biến môi trường
-
-| Biến                        | Mô tả                                 | Bắt buộc                    |
-| --------------------------- | ------------------------------------- | --------------------------- |
-| `GATEWAY_PRIVATE_KEY`       | Private key EOA wallet để ký payments | Không (demo mode nếu thiếu) |
-| `SELLER_ADDRESS`            | Địa chỉ ví nhận USDC từ payments      | Không                       |
-| `NEXT_PUBLIC_WC_PROJECT_ID` | WalletConnect Project ID              | Không                       |
-
-## Demo Services (x402-protected)
-
-| Endpoint                | Price    | Mô tả                 |
-| ----------------------- | -------- | --------------------- |
-| `/api/demo/ai-text`     | $0.001   | AI Text Generation    |
-| `/api/demo/market-data` | $0.0001  | Real-time Market Data |
-| `/api/demo/translate`   | $0.0005  | Language Translation  |
-| `/api/demo/code-review` | $0.01    | AI Code Review        |
-| `/api/demo/sentiment`   | $0.0002  | Sentiment Analysis    |
-| `/api/demo/weather`     | $0.00005 | Weather Intelligence  |
-
-## Luồng thanh toán
-
-```
-1. User deposit USDC → Circle Gateway (on-chain, 1 lần)
-2. User click "Pay & Use" → POST /api/pay
-3. Server GatewayClient.pay(serviceUrl)
-4. GatewayClient: GET /api/demo/ai-text → 402 response
-5. GatewayClient: sign EIP-3009 authorization (offchain, 0 gas)
-6. GatewayClient: retry với PAYMENT-SIGNATURE header
-7. Service endpoint: verify + return data
-8. Circle Gateway batch settle trên Arc Testnet
-```
-
-## Links
-
-- [Circle Gateway Nanopayments Docs](https://developers.circle.com/gateway/nanopayments)
-- [Buyer Quickstart](https://developers.circle.com/gateway/nanopayments/quickstarts/buyer)
-- [Seller Quickstart](https://developers.circle.com/gateway/nanopayments/quickstarts/seller)
-- [USDC Testnet Faucet](https://faucet.circle.com)
-- [Arc Testnet Explorer](https://testnet.arcscan.app)
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Phase 2: AI Agent Layer (Hackathon Track 4)
+## Environment Variables
 
-> **Stablecoins Commerce Stack Challenge — Track 4: Best Agentic Economy Experience on Arc**
+```env
+# Circle Gateway (required)
+CIRCLE_API_KEY=TEST_API_KEY:...
 
-### Problem
+# Circle Developer-Controlled Wallets (recommended)
+CIRCLE_ENTITY_SECRET=...     # From console.circle.com → Developer → Entity Secret
+CIRCLE_WALLET_ID=...         # Run: node scripts/create-circle-agent-wallet.mjs
 
-Current app is a **manual marketplace** — user clicks each API call individually.
-Track 4 requires an **AI agent that autonomously decides and pays** without user confirmation per step.
+# Fallback: raw EOA key (if Circle Wallets not configured)
+AGENT_PRIVATE_KEY=...        # Must have USDC deposited in GatewayWallet
 
-### What to Add
+# AI
+GROQ_API_KEY=...             # groq.com — free tier, 14,400 req/day
 
-#### Critical: Server-side payment signing
-
-Currently `useGatewayPay.ts` uses wagmi's `useSignTypedData` — MetaMask signs in the browser.
-An agent cannot popup MetaMask. Need a server-side signer:
-
-- `lib/agent-wallet.ts` — viem walletClient with `AGENT_PRIVATE_KEY`, signs EIP-3009 server-side
-- `lib/agent-pay.ts` — server-side equivalent of `useGatewayPay`, no browser required
-
-#### AI Agent API route
-
-- `app/api/agent/route.ts` — `POST`, receives `{ task, budget }`, uses Vercel AI SDK `streamText()`
-- 6 tools defined (one per paid API), each `tool.execute()` calls x402 endpoint + signs autonomously
-- Budget enforcement: agent tracks total spent, stops when limit reached
-
-#### Chat UI
-
-- `app/agent/page.tsx` — `useChat()` from AI SDK UI
-- User types natural language task: _"Analyze BTC market sentiment"_
-- Streams agent thinking + each payment step in realtime
-- Shows budget remaining, payment receipt per tool call
-
-### Autonomous Flow
-
-```
-User: "Give me a full BTC market analysis"
-        │
-        ▼
-POST /api/agent  (Vercel AI SDK streamText)
-        │
-        ├── LLM decides: need marketData + sentiment + aiText
-        │
-        ├── tool: callMarketData  → agent-wallet signs EIP-3009 (server-side, no MetaMask)
-        │                          → POST /api/demo/market-data with payment header
-        │                          → Circle Gateway settles → returns price data
-        │
-        ├── tool: callSentiment   → same flow, -$1 USDC
-        │
-        ├── tool: callAIText      → same flow, -$1 USDC, synthesizes final report
-        │
-        └── LLM streams final report to user
-            Total: $3 USDC spent autonomously, zero MetaMask popups
+# Demo service seller
+SELLER_ADDRESS=...           # Address receiving $1 USDC per API call
 ```
 
-### Files to Create / Modify
-
-| File                           | Action | Description                                         |
-| ------------------------------ | ------ | --------------------------------------------------- |
-| `lib/agent-wallet.ts`          | NEW    | viem walletClient, server-side EIP-3009 signing     |
-| `lib/agent-pay.ts`             | NEW    | server-side payment flow (no browser/wagmi)         |
-| `app/api/agent/route.ts`       | NEW    | streamText + 6 tools + budget enforcement           |
-| `app/agent/page.tsx`           | NEW    | Chat UI with useChat(), payment log, budget tracker |
-| `components/agent-chat.tsx`    | NEW    | Chat component with tool call visualization         |
-| `components/payment-steps.tsx` | NEW    | Realtime display of agent payment steps             |
-| `.env.local`                   | UPDATE | Add `AGENT_PRIVATE_KEY`, `GEMINI_API_KEY`           |
-
-### New Dependencies
+### Setup Circle Wallets (one-time)
 
 ```bash
-pnpm add ai @ai-sdk/google   # Gemini free tier (1M tokens/day)
-# OR
-pnpm add ai @ai-sdk/openai   # OpenAI (paid, ~$0.002/1K tokens)
+# 1. Set CIRCLE_API_KEY + CIRCLE_ENTITY_SECRET in .env.local
+# 2. Create wallet:
+node scripts/create-circle-agent-wallet.mjs
+# 3. Add CIRCLE_WALLET_ID to .env.local
+# 4. Fund wallet at faucet.circle.com (Arc Testnet)
+# 5. Deposit into GatewayWallet:
+node scripts/deposit-agent.mjs 10
 ```
 
-**Recommended: Google Gemini** — free tier sufficient for demo, key at [aistudio.google.com](https://aistudio.google.com).
+---
 
-### New Environment Variables
+## Paid API Services
 
-| Variable            | Description                                             | Required |
-| ------------------- | ------------------------------------------------------- | -------- |
-| `AGENT_PRIVATE_KEY` | EOA private key for agent-initiated payments            | Yes      |
-| `AGENT_ADDRESS`     | Corresponding address (pre-funded with USDC in Gateway) | Yes      |
-| `GEMINI_API_KEY`    | Google AI Studio API key (free)                         | Yes      |
+| Service     | Endpoint                | Price      | Data Source                                 |
+| ----------- | ----------------------- | ---------- | ------------------------------------------- |
+| Market Data | `/api/demo/market-data` | $1.00 USDC | CoinGecko (any coin: BTC, ETH, TON, SOL...) |
+| Weather     | `/api/demo/weather`     | $1.00 USDC | Open-Meteo (any city)                       |
+| AI Text     | `/api/demo/ai-text`     | $1.00 USDC | Groq `llama-3.1-8b-instant`                 |
+| Translate   | `/api/demo/translate`   | $1.00 USDC | Groq `llama-3.1-8b-instant`                 |
+| Code Review | `/api/demo/code-review` | $1.00 USDC | Groq `llama-3.1-8b-instant`                 |
+| Sentiment   | `/api/demo/sentiment`   | $1.00 USDC | Groq `llama-3.1-8b-instant`                 |
 
-### Demo Scenario (for submission video)
+All endpoints implement **x402 protocol**: return HTTP 402 with payment requirements, then verify + settle via Circle Gateway.
 
-1. User sets budget: **$10 USDC max**
-2. User types: _"Research and summarize BTC outlook"_
-3. Agent calls Market Data API → pays $1 → receives price data
-4. Agent calls Sentiment Analysis API → pays $1 → receives sentiment score
-5. Agent calls AI Text Generation API → pays $1 → synthesizes report
-6. User sees: full report + payment receipt showing 3× $1 charges + $7 remaining budget
-7. Gateway balance decreases $3 in realtime on the dashboard
+---
+
+## Agent Payment Flow
+
+```
+User: "What is the price of TON?"
+        │
+        ▼
+POST /api/agent  (Groq llama-3.3-70b-versatile via AI SDK streamText)
+        │
+        ├── LLM decides: call market_data(symbol="TON")
+        │
+        ├── tool.execute():
+        │     ├── getCircleWalletAddress() → Circle Wallets API (or AGENT_PRIVATE_KEY fallback)
+        │     ├── GET /api/demo/market-data?coins=TON  → 402 response
+        │     ├── signWithCircleWallet() → Circle HSM signs EIP-712 (or raw key fallback)
+        │     ├── GET /api/demo/market-data with Payment-Signature header
+        │     ├── BatchFacilitatorClient.verify() + .settle() → Arc Testnet
+        │     └── Returns: { TON: { price: $X, change24h: Y% }, source: CoinGecko }
+        │
+        └── LLM streams answer to user
+            Total: $1 USDC spent, zero MetaMask popups
+```
+
+---
+
+## Architecture
+
+See [/architecture](/architecture) for the full system diagram.
+
+Key components:
+
+- **Next.js API Routes** — agent loop, demo services, balance reads
+- **Circle Gateway** — batched EIP-3009 settlement on Arc Testnet
+- **Circle Developer Wallets** — HSM-backed signing for agent key
+- **Groq LLM** — autonomous tool selection and response generation
+- **CoinGecko + Open-Meteo** — real-time market and weather data
+
+---
+
+## Circle Product Feedback
+
+### Products used
+
+- Circle Gateway Nanopayments (`@circle-fin/x402-batching`)
+- Circle Developer-Controlled Wallets (`@circle-fin/developer-controlled-wallets`)
+- USDC on Arc Testnet (Chain ID 5042002)
+- CCTP Bridge Kit (UI integration)
+
+### Why these products
+
+Circle Gateway Nanopayments is the **only viable solution** for sub-$1 per-call API monetization on-chain. Traditional smart contract payments have gas overhead that exceeds the payment value. The x402 protocol + EIP-3009 offchain signing eliminates this entirely.
+
+Circle Developer-Controlled Wallets solves the **autonomous agent key management problem**: agents cannot use browser wallets (MetaMask), and storing raw private keys in env vars is a security risk for production. Circle's HSM-backed signing keeps private keys out of application code.
+
+### What worked well
+
+- `BatchFacilitatorClient.verify()` + `.settle()` API is clean and predictable
+- x402 protocol implementation is straightforward — standard HTTP 402 with base64-encoded payment requirements
+- Circle Wallets wallet creation via `initiateDeveloperControlledWalletsClient` is simple
+- Arc Testnet USDC faucet availability made testing easy
+
+### What could be improved
+
+- `signTypedData` in Circle Wallets API returns "API parameter invalid" (code 2) for Arc Testnet custom chain — unclear whether Arc's chain ID (5042002) is supported for EIP-712 signing. Better error messages with supported chains list would help.
+- Circle Wallets docs lack examples for custom EVM chains outside Ethereum mainnet/testnet
+- The x402 `PAYMENT-REQUIRED` header encoding (base64 JSON) is undocumented outside the SDK — would benefit from an OpenAPI spec
+
+### Recommendations
+
+- Add explicit list of supported chains for `signTypedData` in Circle Wallets docs
+- Provide a test mode for Circle Gateway that skips actual settlement (faster dev iteration)
+- An official x402 protocol spec document (not just SDK) would enable multi-language implementations
+
+---
+
+## Links
+
+- [Circle Gateway Docs](https://developers.circle.com/gateway/nanopayments)
+- [Circle Wallets Docs](https://developers.circle.com/wallets)
+- [Arc Testnet Explorer](https://testnet.arcscan.app)
+- [USDC Testnet Faucet](https://faucet.circle.com)
+- [Hackathon](https://app.ignyte.ae/public/challenges/4B436318-C737-F111-9A49-6045BD14D400)

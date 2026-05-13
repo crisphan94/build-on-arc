@@ -14,6 +14,7 @@
  */
 
 import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets'
+import { hashTypedData } from 'viem'
 import type { AgentSignatureResult } from '@/lib/agent-wallet'
 import {
   ARC_TESTNET_CHAIN_ID,
@@ -47,33 +48,38 @@ function buildTypedData(params: {
   nonce: string
   verifyingContract: string
 }) {
-  return {
-    domainSeparator: {
-      name: GATEWAY_BATCHING_NAME,
-      version: GATEWAY_BATCHING_VERSION,
-      chainId: ARC_TESTNET_CHAIN_ID,
-      verifyingContract: params.verifyingContract,
-    },
-    primaryType: 'TransferWithAuthorization',
-    types: {
-      TransferWithAuthorization: [
-        { name: 'from', type: 'address' },
-        { name: 'to', type: 'address' },
-        { name: 'value', type: 'uint256' },
-        { name: 'validAfter', type: 'uint256' },
-        { name: 'validBefore', type: 'uint256' },
-        { name: 'nonce', type: 'bytes32' },
-      ],
-    },
-    message: {
-      from: params.from,
-      to: params.to,
-      value: params.value.toString(),
-      validAfter: params.validAfter.toString(),
-      validBefore: params.validBefore.toString(),
-      nonce: params.nonce,
-    },
+  // Circle API expects EIP-712 typed data with domainSeparator as a 0x-prefixed hex hash
+  const domain = {
+    name: GATEWAY_BATCHING_NAME,
+    version: GATEWAY_BATCHING_VERSION,
+    chainId: ARC_TESTNET_CHAIN_ID,
+    verifyingContract: params.verifyingContract as `0x${string}`,
   }
+
+  const types = {
+    TransferWithAuthorization: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'validAfter', type: 'uint256' },
+      { name: 'validBefore', type: 'uint256' },
+      { name: 'nonce', type: 'bytes32' },
+    ],
+  }
+
+  const message = {
+    from: params.from as `0x${string}`,
+    to: params.to as `0x${string}`,
+    value: params.value,
+    validAfter: params.validAfter,
+    validBefore: params.validBefore,
+    nonce: params.nonce as `0x${string}`,
+  }
+
+  // Pre-compute the EIP-712 hash — Circle API accepts the full hash directly
+  const hash = hashTypedData({ domain, types, primaryType: 'TransferWithAuthorization', message })
+
+  return { domain, types, primaryType: 'TransferWithAuthorization' as const, message, hash }
 }
 
 // ── Main: sign via Circle Wallets API ────────────────────────────────────────
@@ -87,52 +93,70 @@ export async function signWithCircleWallet(params: {
 
   // Use Circle Wallets API when configured
   if (walletId && process.env.CIRCLE_ENTITY_SECRET) {
-    const client = getCircleClient()
+    try {
+      const client = getCircleClient()
 
-    // Get wallet address from Circle
-    const walletRes = await client.getWallet({ id: walletId })
-    const walletAddress = walletRes.data?.wallet?.address as `0x${string}`
-    if (!walletAddress) throw new Error('Circle wallet address not found')
+      // Get wallet address from Circle
+      const walletRes = await client.getWallet({ id: walletId })
+      const walletAddress = walletRes.data?.wallet?.address as `0x${string}`
+      if (!walletAddress) throw new Error('Circle wallet address not found')
 
-    const now = Math.floor(Date.now() / 1000)
-    const validAfter = BigInt(now - 600)
-    const validBefore = BigInt(now + GATEWAY_AUTH_VALIDITY_SECONDS)
+      const now = Math.floor(Date.now() / 1000)
+      const validAfter = BigInt(now - 600)
+      const validBefore = BigInt(now + GATEWAY_AUTH_VALIDITY_SECONDS)
 
-    const nonceBytes = crypto.getRandomValues(new Uint8Array(32))
-    const nonce = `0x${Array.from(nonceBytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')}` as `0x${string}`
+      const nonceBytes = crypto.getRandomValues(new Uint8Array(32))
+      const nonce = `0x${Array.from(nonceBytes)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('')}` as `0x${string}`
 
-    const typedData = buildTypedData({
-      from: walletAddress,
-      to: params.to,
-      value: params.value,
-      validAfter,
-      validBefore,
-      nonce,
-      verifyingContract: params.verifyingContract,
-    })
-
-    // Sign via Circle API — private key stays in Circle's HSM
-    const signRes = await client.signTypedData({
-      walletId,
-      data: typedData as Parameters<typeof client.signTypedData>[0]['data'],
-    })
-
-    const signature = signRes.data?.signature as `0x${string}`
-    if (!signature) throw new Error('Circle signing returned no signature')
-
-    return {
-      signature,
-      authorization: {
+      const typedData = buildTypedData({
         from: walletAddress,
         to: params.to,
-        value: params.value.toString(),
-        validAfter: (now - 600).toString(),
-        validBefore: (now + GATEWAY_AUTH_VALIDITY_SECONDS).toString(),
+        value: params.value,
+        validAfter,
+        validBefore,
         nonce,
-      },
-      signingMethod: 'circle-wallet',
+        verifyingContract: params.verifyingContract,
+      })
+
+      // Sign via Circle API — private key stays in Circle's HSM
+      // Circle expects: domainSeparator (hex hash), primaryType, types (without EIP712Domain), message
+      const circleSignPayload = {
+        domainSeparator: typedData.hash, // pre-computed EIP-712 hash
+        primaryType: typedData.primaryType,
+        types: typedData.types,
+        message: {
+          from: typedData.message.from,
+          to: typedData.message.to,
+          value: typedData.message.value.toString(),
+          validAfter: typedData.message.validAfter.toString(),
+          validBefore: typedData.message.validBefore.toString(),
+          nonce: typedData.message.nonce,
+        },
+      }
+      const signRes = await client.signTypedData({
+        walletId,
+        data: circleSignPayload as unknown as Parameters<typeof client.signTypedData>[0]['data'],
+      })
+
+      const signature = signRes.data?.signature as `0x${string}`
+      if (!signature) throw new Error('Circle signing returned no signature')
+
+      return {
+        signature,
+        authorization: {
+          from: walletAddress,
+          to: params.to,
+          value: params.value.toString(),
+          validAfter: (now - 600).toString(),
+          validBefore: (now + GATEWAY_AUTH_VALIDITY_SECONDS).toString(),
+          nonce,
+        },
+        signingMethod: 'circle-wallet',
+      }
+    } catch (err) {
+      console.warn('[circle-wallet] Circle signing failed, falling back to AGENT_PRIVATE_KEY:', err)
     }
   }
 
@@ -147,11 +171,16 @@ export async function signWithCircleWallet(params: {
 export async function getCircleWalletAddress(): Promise<`0x${string}`> {
   const walletId = process.env.CIRCLE_WALLET_ID
   if (walletId && process.env.CIRCLE_ENTITY_SECRET) {
-    const client = getCircleClient()
-    const res = await client.getWallet({ id: walletId })
-    return res.data?.wallet?.address as `0x${string}`
+    try {
+      const client = getCircleClient()
+      const res = await client.getWallet({ id: walletId })
+      const addr = res.data?.wallet?.address as `0x${string}` | undefined
+      if (addr) return addr
+    } catch (err) {
+      console.warn('[circle-wallet] Circle API failed, falling back to AGENT_PRIVATE_KEY:', err)
+    }
   }
-  // fallback
+  // fallback: raw private key
   const { getAgentAddress } = await import('@/lib/agent-wallet')
   return getAgentAddress()
 }

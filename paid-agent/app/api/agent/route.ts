@@ -10,21 +10,21 @@ export const maxDuration = 120
 const COST_PER_CALL = 1_000_000 // 1 USDC in base units
 
 // ── Agent system prompt ──────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are AgentPay, an autonomous AI research agent that pays for real data APIs using USDC nanopayments on Arc Testnet.
+const SYSTEM_PROMPT = `You are AgentPay — an AI agent that answers every question by calling a paid tool. You never answer from internal knowledge.
 
-You have access to 6 paid API tools. Each call costs $1 USDC from the user's budget.
-Always check if budget allows before calling a tool. If budget is exhausted, stop and explain.
+Rules:
+- Call a tool for EVERY user question, no exceptions.
+- Budget: each tool call costs $1 USDC. Stop if budget runs out.
+- After getting tool result, summarize the finding clearly.
+- End each response with a payment summary (tools called, total spent).
 
-Available tools:
-- market_data: Live crypto prices (BTC, ETH, USDC) and 24h change
-- weather: Weather forecast for a location
-- ai_text: AI-generated text/analysis on a topic
-- translate: Translate text to another language
-- code_review: Code quality and security analysis
-- sentiment: Sentiment analysis of text
-
-When you call a tool, briefly narrate what you're doing and why. After each tool result, summarize the key finding before proceeding.
-At the end, provide a complete synthesized answer. Always show a payment summary at the end.`
+Tool selection:
+- market_data → crypto prices (any coin: BTC, ETH, TON, SOL, OP, BNB, etc.) — MUST pass symbol= e.g. symbol="TON"
+- weather → weather for any city
+- ai_text → general questions, advice, explanations, analysis
+- translate → translation requests
+- code_review → code analysis
+- sentiment → tone/feeling analysis`
 
 export async function POST(req: Request) {
   const { messages, budget = 5 } = (await req.json()) as {
@@ -55,17 +55,52 @@ export async function POST(req: Request) {
 
   const baseUrl = new URL(req.url).origin
 
+  // ── Extract coin symbols from free-text as fallback ────────────────────
+  function extractSymbolFromMessages(): string | null {
+    const text = [...messages].reverse().find((m) => m.role === 'user')?.content ?? ''
+    // Try known symbols first (case-insensitive)
+    const known = text.match(
+      /\b(BTC|ETH|TON|SOL|BNB|OP|MATIC|AVAX|ADA|DOT|LINK|UNI|AAVE|SHIB|DOGE|XRP|LTC|BCH|ATOM|NEAR|APT|ARB|SUI|WLD|RNDR|INJ|TIA|SEI|JTO|PEPE|WIF|BONK|FLOKI|ORDI)\b/gi,
+    )
+    if (known?.length) return [...new Set(known.map((s) => s.toUpperCase()))].join(',')
+    // Fallback: any ALLCAPS word 2-6 chars that looks like a ticker
+    const ticker = text.match(/\b[A-Z]{2,6}\b/g)
+    if (ticker?.length) return ticker[0]
+    return null
+  }
+
   // ── Tool definitions ─────────────────────────────────────────────────────
   const tools = {
     market_data: tool({
-      description: 'Get live cryptocurrency market prices and 24h change. Costs $1 USDC.',
-      parameters: z.object({}),
-      execute: async () => {
+      description:
+        'Get live cryptocurrency price from CoinGecko. Costs $1 USDC. Works for ANY coin: TON, BTC, ETH, SOL, OP, BNB, etc.',
+      parameters: z.object({
+        symbol: z
+          .string()
+          .describe(
+            'The coin symbol(s) to look up. Single: "TON". Multiple: "BTC,ETH,SOL". Use EXACTLY what the user asked for.',
+          ),
+      }),
+      execute: async ({ symbol }) => {
+        // If LLM failed to pass symbol, extract it from the latest user message
+        const resolvedSymbol =
+          !symbol || symbol.trim() === '' || symbol === 'undefined'
+            ? extractSymbolFromMessages()
+            : symbol.trim()
+
+        console.log('[market_data] symbol param:', symbol, '→ resolved:', resolvedSymbol)
+
+        if (!resolvedSymbol) {
+          return {
+            error:
+              'Could not determine which coin to look up. Please specify a coin symbol like TON, BTC, or ETH.',
+          }
+        }
         if (spentBaseUnits + COST_PER_CALL > budgetBaseUnits) {
           return { error: 'Budget exhausted. Cannot make more API calls.' }
         }
         try {
-          const result = await agentPay('market-data', baseUrl)
+          const result = await agentPay('market-data', baseUrl, { coins: resolvedSymbol })
           spentBaseUnits += COST_PER_CALL
           return {
             ...result.data,
@@ -78,16 +113,16 @@ export async function POST(req: Request) {
     }),
 
     weather: tool({
-      description: 'Get weather forecast for a location. Costs $1 USDC.',
+      description: 'Get weather forecast for any city or location. Costs $1 USDC.',
       parameters: z.object({
-        location: z.string().describe('City or location name'),
+        location: z.string().describe('City or location name, e.g. "Tokyo", "London", "New York"'),
       }),
-      execute: async () => {
+      execute: async ({ location }) => {
         if (spentBaseUnits + COST_PER_CALL > budgetBaseUnits) {
           return { error: 'Budget exhausted. Cannot make more API calls.' }
         }
         try {
-          const result = await agentPay('weather', baseUrl)
+          const result = await agentPay('weather', baseUrl, { location })
           spentBaseUnits += COST_PER_CALL
           return {
             ...result.data,
@@ -196,9 +231,10 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: groq('llama-3.3-70b-versatile'),
-    system: `${SYSTEM_PROMPT}\n\nCurrent budget: $${budget} USDC (${budget} API calls max). Agent wallet: ${agentAddress}. Signing method: ${signingMethod}.`,
-    messages: messages as Parameters<typeof streamText>[0]['messages'],
+    system: `${SYSTEM_PROMPT}\n\nBudget: $${budget} USDC remaining. Agent wallet: ${agentAddress}. Signing: ${signingMethod}.`,
+    messages: (messages ?? []) as Parameters<typeof streamText>[0]['messages'],
     tools,
+    temperature: 0,
     stopWhen: stepCountIs(10),
     onError: ({ error }) => {
       console.error('[agent] streamText error:', error)
@@ -224,13 +260,13 @@ export async function POST(req: Request) {
               type: 'tool-result'
               toolCallId: string
               toolName: string
-              result: unknown
+              output: unknown
             }
             send({
               type: 'tool-done',
               toolCallId: r.toolCallId,
               toolName: r.toolName,
-              output: r.result,
+              output: r.output,
             })
           } else if (chunk.type === 'finish') {
             send({ type: 'done' })
