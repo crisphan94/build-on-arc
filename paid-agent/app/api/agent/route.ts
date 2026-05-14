@@ -291,7 +291,7 @@ export async function POST(req: Request) {
               model: 'llama-3.3-70b-versatile',
               messages: conversationMessages,
               tools,
-              tool_choice: iteration === 1 ? 'required' : 'auto'
+              tool_choice: iteration === 1 ? 'required' : 'auto',
               temperature: 0.5,
               max_tokens: 4096,
             })
