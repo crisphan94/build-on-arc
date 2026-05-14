@@ -85,7 +85,7 @@ export default function HomePage() {
 
         const uploadData = await uploadResponse.json()
         avatarUrl = uploadData.ipfsUrl
-        console.log('✅ Avatar uploaded to IPFS:', avatarUrl)
+        console.log('Avatar uploaded to IPFS:', avatarUrl)
       }
 
       // Step 2: Create metadata object
@@ -95,7 +95,7 @@ export default function HomePage() {
         image: avatarUrl,
         createdAt: new Date().toISOString(),
       }
-      console.log('📝 Agent metadata:', metadata)
+      console.log('Agent metadata:', metadata)
 
       // Step 3: Upload metadata to IPFS
       const metadataResponse = await fetch('/api/upload-metadata', {
@@ -111,7 +111,7 @@ export default function HomePage() {
 
       const metadataData = await metadataResponse.json()
       const metadataUri = metadataData.ipfsUrl
-      console.log('✅ Metadata uploaded to IPFS:', metadataUri)
+      console.log('Metadata uploaded to IPFS:', metadataUri)
 
       // Step 4: Get contract address
       let contractAddress: `0x${string}`
@@ -124,7 +124,7 @@ export default function HomePage() {
       }
 
       // Step 5: Create agent on-chain
-      console.log('⏳ Deploying agent on-chain...')
+      console.log('Deploying agent on-chain...')
       const hash = await writeContractAsync({
         address: contractAddress,
         abi: AGENT_REGISTRY_ABI,
@@ -132,7 +132,7 @@ export default function HomePage() {
         args: [agentName, agentDescription, avatarUrl || metadataUri],
       })
 
-      console.log('✅ Transaction submitted:', hash)
+      console.log('Transaction submitted:', hash)
       setTxHash(hash)
       setShowSuccess(true)
 
@@ -142,7 +142,7 @@ export default function HomePage() {
       setAvatarFile(null)
       setAvatarPreview(null)
     } catch (error: unknown) {
-      console.error('❌ Error creating agent:', error)
+      console.error('Error creating agent:', error)
       let errorMessage = 'Failed to create agent. Please try again.'
       if (error instanceof Error) {
         errorMessage = error.message
@@ -422,7 +422,7 @@ export default function HomePage() {
                 {/* Helper Text */}
                 {!isConnected ? (
                   <p className='text-center text-sm text-amber-400'>
-                    ⚠️ Please connect your wallet using the button in the header
+                    Please connect your wallet using the button in the header
                   </p>
                 ) : (
                   <p className='text-center text-sm text-slate-400'>

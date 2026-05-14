@@ -16,13 +16,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'CIRCLE_WALLET_SET_ID not configured' }, { status: 500 })
     }
 
-    console.log('1️⃣ Creating Smart Contract Wallet on Arc Testnet...')
+    console.log('Step 1: Creating Smart Contract Wallet on Arc Testnet...')
     const wallet = await createArcWallet(walletSetId)
-    console.log(`✅ Wallet created: ${wallet.address}`)
+    console.log(`Wallet created: ${wallet.address}`)
 
-    console.log('2️⃣ Registering Agent Identity...')
+    console.log('Step 2: Registering Agent Identity...')
     const txHash = await registerAgentIdentity(wallet.address, metadataURI)
-    console.log(`✅ Registered: ${txHash}`)
+    console.log(`Registered: ${txHash}`)
 
     return NextResponse.json({
       success: true,
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       message: 'AI Agent registered successfully!',
     })
   } catch (error: unknown) {
-    console.error('❌ Error:', error)
+    console.error('Error:', error)
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to register agent',

@@ -150,16 +150,16 @@ export async function burnUSDC(
 
   const mintRecipient = `0x${recipientAddress.slice(2).padStart(64, '0')}` as Address
 
-  onProgress?.('⏳ Waiting for wallet approval (1/2)')
+  onProgress?.('Waiting for wallet approval (1/2)')
   const approveTxHash = await walletClient.writeContract({
     address: config.usdcAddress,
     abi: ERC20_ABI,
     functionName: 'approve',
     args: [config.tokenMessenger, maxUint256],
     chain: { id: config.chainId } as any,
-  })
+  } as any)
 
-  onProgress?.('⏰ Confirming approval...')
+  onProgress?.('Confirming approval...')
   const rpcUrls = RPC_URLS[config.chainId]
   let approveReceipt = null
 
@@ -184,7 +184,7 @@ export async function burnUSDC(
       ])
 
       if (approveReceipt) {
-        onProgress?.('✅ Approval confirmed')
+        onProgress?.('Approval confirmed')
         break
       }
     } catch (err) {
@@ -196,7 +196,7 @@ export async function burnUSDC(
     throw new Error('Approval confirmation failed. Check tx: ' + approveTxHash)
   }
 
-  onProgress?.('🔍 Verifying allowance...')
+  onProgress?.('Verifying allowance...')
   const publicClient = createPublicClient({
     chain: { id: config.chainId } as any,
     transport: http(rpcUrls[0], { timeout: 30_000 }),
@@ -214,7 +214,7 @@ export async function burnUSDC(
   }
 
   // Check USDC balance
-  onProgress?.('🔍 Checking USDC balance...')
+  onProgress?.('Checking USDC balance...')
   const balance = await publicClient.readContract({
     address: config.usdcAddress,
     abi: ERC20_ABI,
@@ -247,7 +247,7 @@ export async function burnUSDC(
           config.usdcAddress,
         ],
         chain: { id: config.chainId } as any,
-      })
+      } as any)
       break
     } catch (err: any) {
       burnAttempts++
@@ -376,14 +376,14 @@ export async function mintOnArc(
     )
   }
 
-  onProgress?.('⏳ Waiting for wallet approval — Check your wallet extension')
+  onProgress?.('Waiting for wallet approval — Check your wallet extension')
   const mintTxHash = await walletClient.writeContract({
     address: arcConfig.messageTransmitter,
     abi: MESSAGE_TRANSMITTER_ABI,
     functionName: 'receiveMessage',
     args: [attestation.message as `0x${string}`, attestation.attestation as `0x${string}`],
     chain: { id: arcConfig.chainId } as any,
-  })
+  } as any)
 
   return mintTxHash
 }
@@ -406,11 +406,11 @@ export async function bridgeToArc(
     walletClient,
     onProgress,
   )
-  onProgress?.('✅ Burn complete', burnResult.burnTxHash)
+  onProgress?.('Burn complete', burnResult.burnTxHash)
 
-  onProgress?.('⏰ Waiting for attestation...')
+  onProgress?.('Waiting for attestation...')
   const attestationResult = await waitForAttestation(burnResult.messageHash)
-  onProgress?.('✅ Attestation received')
+  onProgress?.('Attestation received')
 
   onProgress?.('Minting USDC...')
   const mintTx = await mintOnArc(attestationResult, walletClient, onProgress)

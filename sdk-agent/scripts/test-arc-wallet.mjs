@@ -17,20 +17,20 @@ const circleClient = initiateUserControlledWalletsClient({
 async function testArcWallet() {
   const userId = `test-arc-${Date.now()}`
   
-  console.log('1️⃣ Creating Circle user...')
+  console.log('Step 1: Creating Circle user...')
   try {
     await circleClient.createUser({ userId })
-    console.log('✅ User created:', userId)
+    console.log('User created:', userId)
   } catch (error) {
-    console.log('⚠️  User creation error:', error.message)
+    console.log('User creation error:', error.message)
   }
 
-  console.log('\n2️⃣ Getting user token...')
+  console.log('\nStep 2: Getting user token...')
   const tokenResponse = await circleClient.createUserToken({ userId })
   const { userToken } = tokenResponse.data
-  console.log('✅ Token acquired')
+  console.log('Token acquired')
 
-  console.log('\n3️⃣ Creating wallet on POLYGON-AMOY (fallback)...')
+  console.log('\nStep 3: Creating wallet on POLYGON-AMOY (fallback)...')
   try {
     const walletResponse = await circleClient.createWallet({
       userToken,
@@ -40,9 +40,9 @@ async function testArcWallet() {
       idempotencyKey: `test-${Date.now()}`,
     })
     
-    console.log('✅ SUCCESS! Wallet:', walletResponse.data.wallet)
+    console.log('SUCCESS! Wallet:', walletResponse.data.wallet)
   } catch (error) {
-    console.error('❌ CREATE WALLET ERROR:')
+    console.error('CREATE WALLET ERROR:')
     console.error('Message:', error.message)
     console.error('Response:', error.response?.data || error)
   }

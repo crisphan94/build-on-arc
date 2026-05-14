@@ -58,7 +58,7 @@ export function AgentMessage({ message }: AgentMessageProps) {
               if (completedCount > 0) {
                 return (
                   <p className='text-xs text-emerald-500 font-mono mt-2 pt-2 border-t border-white/5'>
-                    💳 Total ${completedCount}.00 USDC spent
+                    Total ${completedCount}.00 USDC spent
                   </p>
                 )
               }

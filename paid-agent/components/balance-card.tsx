@@ -195,7 +195,11 @@ function DepositModal({
       onSuccess()
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Deposit failed'
-      setError(message.includes('User rejected') ? 'Transaction rejected in wallet.' : message)
+      setError(
+        message.includes('User rejected') || message.includes('User denied')
+          ? 'User rejected the request.'
+          : message,
+      )
       setStep('idle')
     } finally {
       setLoading(false)
@@ -268,8 +272,8 @@ function DepositModal({
               {loading && (
                 <div className='rounded-xl bg-white/[0.04] border border-white/[0.08] p-3 mb-4'>
                   <p className='text-xs text-slate-400'>
-                    {step === 'approving' && '⏳ Step 1/2: Approving USDC spend in your wallet…'}
-                    {step === 'depositing' && '⏳ Step 2/2: Depositing USDC to Gateway…'}
+                    {step === 'approving' && 'Step 1/2: Approving USDC spend in your wallet…'}
+                    {step === 'depositing' && 'Step 2/2: Depositing USDC to Gateway…'}
                   </p>
                 </div>
               )}
@@ -332,7 +336,11 @@ function WithdrawModal({
       onSuccess()
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Withdraw failed'
-      setError(message.includes('User rejected') ? 'Transaction rejected in wallet.' : message)
+      setError(
+        message.includes('User rejected') || message.includes('User denied')
+          ? 'User rejected the request.'
+          : message,
+      )
       setStep('idle')
     } finally {
       setLoading(false)

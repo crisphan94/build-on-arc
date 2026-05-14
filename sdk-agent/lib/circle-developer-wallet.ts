@@ -37,7 +37,7 @@ export async function createArcWallet(walletSetId: string): Promise<CreateWallet
       blockchain: 'ARC-TESTNET',
     }
   } catch (error: unknown) {
-    console.error('❌ Create Arc wallet error:', error)
+    console.error('Create Arc wallet error:', error)
     throw new Error(error instanceof Error ? error.message : 'Failed to create wallet')
   }
 }
@@ -88,7 +88,7 @@ export async function registerAgentIdentity(
 
     return txHash
   } catch (error: unknown) {
-    console.error('❌ Register agent error:', error)
+    console.error('Register agent error:', error)
     throw new Error(error instanceof Error ? error.message : 'Failed to register agent')
   }
 }
@@ -107,7 +107,7 @@ export async function createWalletSet(name: string): Promise<string> {
 
     return walletSetId
   } catch (error: unknown) {
-    console.error('❌ Create wallet set error:', error)
+    console.error('Create wallet set error:', error)
     throw new Error(error instanceof Error ? error.message : 'Failed to create wallet set')
   }
 }

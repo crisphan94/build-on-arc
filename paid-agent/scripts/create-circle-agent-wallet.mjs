@@ -32,11 +32,11 @@ const CIRCLE_API_KEY = env['CIRCLE_API_KEY']
 const CIRCLE_ENTITY_SECRET = env['CIRCLE_ENTITY_SECRET']
 
 if (!CIRCLE_API_KEY) {
-  console.error('❌ CIRCLE_API_KEY not found in .env.local')
+  console.error('CIRCLE_API_KEY not found in .env.local')
   process.exit(1)
 }
 if (!CIRCLE_ENTITY_SECRET) {
-  console.error('❌ CIRCLE_ENTITY_SECRET not found in .env.local')
+  console.error('CIRCLE_ENTITY_SECRET not found in .env.local')
   console.error('   Generate at: https://console.circle.com → Developer → Entity Secret')
   process.exit(1)
 }
@@ -46,7 +46,7 @@ const client = initiateDeveloperControlledWalletsClient({
   entitySecret: CIRCLE_ENTITY_SECRET,
 })
 
-console.log('🔑 Creating Circle Developer-Controlled Wallet for AgentPay...')
+console.log('Creating Circle Developer-Controlled Wallet for AgentPay...')
 
 try {
   // Step 1: Create wallet set
@@ -55,7 +55,7 @@ try {
   })
   const walletSetId = walletSetRes.data?.walletSet?.id
   if (!walletSetId) throw new Error('Failed to create wallet set')
-  console.log(`✅ Wallet set created: ${walletSetId}`)
+  console.log(`Wallet set created: ${walletSetId}`)
 
   // Step 2: Create wallet on ARC-TESTNET
   const walletRes = await client.createWallets({
@@ -68,20 +68,20 @@ try {
   const wallet = walletRes.data?.wallets?.[0]
   if (!wallet) throw new Error('Failed to create wallet')
 
-  console.log('\n✅ Circle Agent Wallet created!')
+  console.log('\nCircle Agent Wallet created!')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   console.log(`   Wallet ID:  ${wallet.id}`)
   console.log(`   Address:    ${wallet.address}`)
   console.log(`   Blockchain: ARC-TESTNET`)
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('\n📝 Add to .env.local:')
+  console.log('\nAdd to .env.local:')
   console.log(`   CIRCLE_WALLET_ID=${wallet.id}`)
   console.log(`   CIRCLE_WALLET_ADDRESS=${wallet.address}`)
-  console.log('\n⚠️  Then fund this wallet with USDC on Arc Testnet:')
+  console.log('\nThen fund this wallet with USDC on Arc Testnet:')
   console.log(`   https://faucet.circle.com → network: Arc Testnet → address: ${wallet.address}`)
-  console.log('\n⚠️  Then deposit into GatewayWallet:')
+  console.log('\nThen deposit into GatewayWallet:')
   console.log(`   node scripts/deposit-agent.mjs 10`)
 } catch (err) {
-  console.error('❌ Error:', err.message)
+  console.error('Error:', err.message)
   process.exit(1)
 }

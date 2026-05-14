@@ -185,7 +185,11 @@ export function CctpBridgeCard({ onBridgeSuccess }: CctpBridgeCardProps) {
     } catch (err) {
       console.error('[cctp-bridge] Full error object:', err)
       const message = err instanceof Error ? err.message : 'Bridge failed'
-      setError(message)
+      setError(
+        message.includes('User rejected') || message.includes('User denied')
+          ? 'User rejected the request.'
+          : message,
+      )
       setStep('error')
     }
   }

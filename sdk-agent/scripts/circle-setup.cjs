@@ -75,13 +75,13 @@ async function registerEntitySecretCiphertext(apiKey, ciphertext) {
 
 // Main Setup Flow
 async function setupCircleSDK() {
-  console.log('🔧 Circle SDK Setup\n')
+  console.log('Circle SDK Setup\n')
 
   // Get API key from environment or argument
   const apiKey = process.env.CIRCLE_API_KEY || process.argv[2]
   
   if (!apiKey || apiKey === 'your_circle_api_key_here') {
-    console.error('❌ Error: CIRCLE_API_KEY not provided')
+    console.error('Error: CIRCLE_API_KEY not provided')
     console.log('\nUsage:')
     console.log('  node scripts/circle-setup.js <YOUR_API_KEY>')
     console.log('Or set CIRCLE_API_KEY in .env.local and run:')
@@ -91,35 +91,35 @@ async function setupCircleSDK() {
 
   try {
     // Step 1: Generate Entity Secret
-    console.log('1️⃣ Generating Entity Secret...')
+    console.log('Step 1: Generating Entity Secret...')
     const entitySecret = generateEntitySecret()
-    console.log(`✅ Entity Secret: ${entitySecret}`)
-    console.log('⚠️  SAVE THIS SECURELY! You will need it in .env.local\n')
+    console.log(`Entity Secret: ${entitySecret}`)
+    console.log('SAVE THIS SECURELY! You will need it in .env.local\n')
 
     // Step 2: Get Public Key
-    console.log('2️⃣ Getting Entity Public Key from Circle...')
+    console.log('Step 2: Getting Entity Public Key from Circle...')
     const publicKey = await getEntityPublicKey(apiKey)
-    console.log('✅ Public Key received\n')
+    console.log('Public Key received\n')
 
     // Step 3: Encrypt
-    console.log('3️⃣ Encrypting Entity Secret...')
+    console.log('Step 3: Encrypting Entity Secret...')
     const ciphertext = encryptEntitySecret(entitySecret, publicKey)
-    console.log(`✅ Ciphertext: ${ciphertext}\n`)
+    console.log(`Ciphertext: ${ciphertext}\n`)
 
     // Step 4: Register
-    console.log('4️⃣ Registering Entity Secret Ciphertext with Circle...')
+    console.log('Step 4: Registering Entity Secret Ciphertext with Circle...')
     const result = await registerEntitySecretCiphertext(apiKey, ciphertext)
-    console.log('✅ Registration successful!')
+    console.log('Registration successful!')
     console.log(JSON.stringify(result, null, 2))
 
     // Final Instructions
-    console.log('\n✅ SETUP COMPLETE!\n')
-    console.log('📝 Update your .env.local:')
+    console.log('\nSETUP COMPLETE!\n')
+    console.log('Update your .env.local:')
     console.log(`CIRCLE_ENTITY_SECRET=${entitySecret}`)
-    console.log('\n🎯 Next: Create a Wallet Set at https://console.circle.com/wallets/user/wallet-sets')
+    console.log('\nNext: Create a Wallet Set at https://console.circle.com/wallets/user/wallet-sets')
     
   } catch (error) {
-    console.error('\n❌ Setup failed:', error.message)
+    console.error('\nSetup failed:', error.message)
     process.exit(1)
   }
 }

@@ -23,16 +23,16 @@ async function createWalletSet() {
     )
 
     if (!response.ok) {
-      console.error(`❌ API Error: ${response.status}`)
+      console.error(`API Error: ${response.status}`)
       const text = await response.text()
       console.error(text)
       return
     }
 
     const data = await response.json()
-    console.log('✅ Wallet Set Created!')
+    console.log('Wallet Set Created!')
     console.log(JSON.stringify(data, null, 2))
-    console.log('\n📝 Add to .env.local:')
+    console.log('\nAdd to .env.local:')
     console.log(`CIRCLE_WALLET_SET_ID=${data.data.walletSet.id}`)
   } catch (error) {
     console.error('Error:', error.message)

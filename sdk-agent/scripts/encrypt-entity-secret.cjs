@@ -14,7 +14,7 @@ async function encryptEntitySecret() {
     process.exit(1)
   }
 
-  console.log('🔒 Encrypting Entity Secret...\n')
+  console.log('Encrypting Entity Secret...\n')
   console.log(`Entity Secret: ${entitySecret}\n`)
 
   try {
@@ -30,7 +30,7 @@ async function encryptEntitySecret() {
 
     if (!response.ok) {
       const error = await response.text()
-      console.error(`❌ API Error: ${response.status}`)
+      console.error(`API Error: ${response.status}`)
       console.error(error)
       process.exit(1)
     }
@@ -38,7 +38,7 @@ async function encryptEntitySecret() {
     const data = await response.json()
     const publicKeyPEM = data.data.publicKey
     
-    console.log('✅ Public Key received\n')
+    console.log('Public Key received\n')
 
     // Encrypt entity secret
     const encrypted = crypto.publicEncrypt(
@@ -52,12 +52,12 @@ async function encryptEntitySecret() {
 
     const ciphertext = encrypted.toString('base64')
     
-    console.log('✅ Encryption successful!\n')
-    console.log('🔑 Ciphertext:')
+    console.log('Encryption successful!\n')
+    console.log('Ciphertext:')
     console.log(ciphertext)
     
   } catch (error) {
-    console.error('❌ Error:', error.message)
+    console.error('Error:', error.message)
     process.exit(1)
   }
 }

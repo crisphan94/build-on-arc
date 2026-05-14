@@ -23,7 +23,7 @@ const env = Object.fromEntries(
 
 const PRIVATE_KEY = env.AGENT_PRIVATE_KEY
 if (!PRIVATE_KEY) {
-  console.error('❌ AGENT_PRIVATE_KEY not found in .env.local')
+  console.error('AGENT_PRIVATE_KEY not found in .env.local')
   process.exit(1)
 }
 
@@ -89,8 +89,8 @@ if (isNaN(amountUSDC) || amountUSDC <= 0) {
 const pk = (PRIVATE_KEY.startsWith('0x') ? PRIVATE_KEY : `0x${PRIVATE_KEY}`)
 const account = privateKeyToAccount(pk)
 
-console.log('🤖 Agent address:', account.address)
-console.log('💰 Depositing:', amountUSDC, 'USDC into GatewayWallet...')
+console.log('Agent address:', account.address)
+console.log('Depositing:', amountUSDC, 'USDC into GatewayWallet...')
 
 const publicClient = createPublicClient({ chain: arcTestnet, transport: http() })
 const walletClient = createWalletClient({ account, chain: arcTestnet, transport: http() })
@@ -104,16 +104,16 @@ const balance = await publicClient.readContract({
   functionName: 'balanceOf',
   args: [account.address],
 })
-console.log('📊 EOA USDC balance:', Number(balance) / 1e6, 'USDC')
+console.log('EOA USDC balance:', Number(balance) / 1e6, 'USDC')
 
 if (balance < amountBaseUnits) {
-  console.error(`❌ Insufficient balance. Need ${amountUSDC} USDC but have ${Number(balance) / 1e6} USDC`)
+  console.error(`Insufficient balance. Need ${amountUSDC} USDC but have ${Number(balance) / 1e6} USDC`)
   console.error('   Get test USDC from: https://faucet.circle.com (select Arc Testnet)')
   process.exit(1)
 }
 
 // Approve
-console.log('1️⃣  Approving USDC...')
+console.log('Step 1: Approving USDC...')
 const approveTx = await walletClient.writeContract({
   address: USDC_ADDRESS,
   abi: ERC20_ABI,
@@ -121,10 +121,10 @@ const approveTx = await walletClient.writeContract({
   args: [GATEWAY_WALLET, amountBaseUnits],
 })
 await publicClient.waitForTransactionReceipt({ hash: approveTx })
-console.log('   ✅ Approved:', approveTx)
+console.log('Approved:', approveTx)
 
 // Deposit
-console.log('2️⃣  Depositing into GatewayWallet...')
+console.log('Step 2: Depositing into GatewayWallet...')
 const depositTx = await walletClient.writeContract({
   address: GATEWAY_WALLET,
   abi: GATEWAY_ABI,
@@ -132,6 +132,6 @@ const depositTx = await walletClient.writeContract({
   args: [USDC_ADDRESS, amountBaseUnits],
 })
 await publicClient.waitForTransactionReceipt({ hash: depositTx })
-console.log('   ✅ Deposited:', depositTx)
+console.log('Deposited:', depositTx)
 console.log('')
-console.log('🎉 Done! Agent can now spend up to', amountUSDC, 'USDC via Circle Gateway.')
+console.log('Done! Agent can now spend up to', amountUSDC, 'USDC via Circle Gateway.')

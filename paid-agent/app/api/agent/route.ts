@@ -308,7 +308,7 @@ export async function POST(req: Request) {
               console.error('[agent] Rate limit hit:', message)
               send({
                 type: 'error',
-                error: 'Groq API credits have been used up for today. Please come back tomorrow 🙂',
+                error: 'Groq API credits have been used up for today. Please come back tomorrow.',
               })
               break
             }
@@ -383,7 +383,7 @@ export async function POST(req: Request) {
                   send({
                     type: 'error',
                     error:
-                      'Groq API credits have been used up for today. Please come back tomorrow 🙂',
+                      'Groq API credits have been used up for today. Please come back tomorrow.',
                   })
                 } else {
                   const errMsg = err instanceof Error ? err.message : 'Unknown error'

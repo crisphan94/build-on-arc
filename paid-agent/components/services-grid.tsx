@@ -132,7 +132,11 @@ function PaymentModal({ service, onClose, onSuccess }: PaymentModalProps) {
       })
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Payment failed'
-      setError(message)
+      setError(
+        message.includes('User rejected') || message.includes('User denied')
+          ? 'User rejected the request.'
+          : message,
+      )
       setState('error')
     }
   }

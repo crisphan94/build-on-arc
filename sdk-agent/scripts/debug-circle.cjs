@@ -29,14 +29,14 @@ async function debugPublicKey() {
     }
 
     const data = await response.json()
-    console.log('📋 Full Response:')
+    console.log('Full Response:')
     console.log(JSON.stringify(data, null, 2))
     
     if (data.data && data.data.publicKey) {
-      console.log('\n🔑 Public Key (base64):')
+      console.log('\nPublic Key (base64):')
       console.log(data.data.publicKey)
       
-      console.log('\n🔓 Decoded Public Key:')
+      console.log('\nDecoded Public Key:')
       const decoded = Buffer.from(data.data.publicKey, 'base64').toString('utf-8')
       console.log(decoded)
     }

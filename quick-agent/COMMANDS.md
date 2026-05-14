@@ -91,10 +91,10 @@ npx hardhat run scripts/deploy.js --network arcTestnet
 **Expected output:**
 
 ```
-🚀 Deploying SimpleAgentRegistry to Arc Testnet...
-📝 Deployer address: 0x...
-💰 Deployer balance: 10.0 USDC
-⏳ Deploying contract...
+Deploying SimpleAgentRegistry to Arc Testnet...
+Deployer address: 0x...
+Deployer balance: 10.0 USDC
+Deploying contract...
 ✅ Contract deployed successfully!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📄 Contract Address: 0xYOUR_CONTRACT_ADDRESS
@@ -359,9 +359,9 @@ tree -L 3 -I 'node_modules|.next|cache|artifacts'
 # Run all checks
 echo "1. Checking Node.js..." && node --version && \
 echo "2. Checking pnpm..." && pnpm --version && \
-echo "3. Checking .env.local..." && test -f .env.local && echo "✅ Exists" || echo "❌ Missing" && \
-echo "4. Checking contract..." && test -f contracts/SimpleAgentRegistry.sol && echo "✅ Exists" || echo "❌ Missing" && \
-echo "5. Checking dependencies..." && test -d node_modules && echo "✅ Installed" || echo "❌ Not installed" && \
+echo "3. Checking .env.local..." && test -f .env.local && echo "Exists" || echo "Missing" && \
+echo "4. Checking contract..." && test -f contracts/SimpleAgentRegistry.sol && echo "Exists" || echo "Missing" && \
+echo "5. Checking dependencies..." && test -d node_modules && echo "✅ Installed" || echo "Not installed" && \
 echo "6. All checks complete!"
 ```
 

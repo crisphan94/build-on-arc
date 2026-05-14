@@ -26,7 +26,7 @@ async function checkSupportedBlockchains() {
     }
 
     const data = await response.json()
-    console.log('📋 Wallet Set Config:')
+    console.log('Wallet Set Config:')
     console.log(JSON.stringify(data, null, 2))
   } catch (error) {
     console.error('Error:', error.message)

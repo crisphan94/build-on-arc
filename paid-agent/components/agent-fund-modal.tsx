@@ -85,7 +85,11 @@ export function AgentFundModal({ onClose, onSuccess }: AgentFundModalProps) {
     } catch (err) {
       console.error('[Agent Fund Error]', err)
       const message = err instanceof Error ? err.message : 'Transfer failed'
-      setError(message)
+      setError(
+        message.includes('User rejected') || message.includes('User denied')
+          ? 'User rejected the request.'
+          : message,
+      )
       setLoading(false)
       setStep('idle')
     }
@@ -241,14 +245,12 @@ export function AgentFundModal({ onClose, onSuccess }: AgentFundModalProps) {
                   Cancel
                 </Button>
                 <Button
-                  variant='default'
                   size='md'
                   className='flex-1 bg-indigo-600 hover:bg-indigo-500'
                   loading={loading}
                   onClick={handleTransfer}
                   disabled={!agentAddress || !amount || parseFloat(amount) <= 0}
                 >
-                  <ArrowRight className='h-4 w-4' />
                   Transfer {amount} USDC
                 </Button>
               </div>
