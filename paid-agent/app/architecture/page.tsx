@@ -109,7 +109,7 @@ export default function ArchitecturePage() {
             </text>
             <rect x='215' y='225' width='120' height='24' rx='6' fill='#0f172a' />
             <text x='275' y='241' textAnchor='middle' fill='#818cf8' fontSize='9'>
-              /api/agent (streamText)
+              /api/agent (Groq SDK)
             </text>
 
             {/* ── GROQ LLM ── */}
@@ -126,10 +126,10 @@ export default function ArchitecturePage() {
               GROQ LLM
             </text>
             <text x='470' y='104' textAnchor='middle' fill='#e9d5ff' fontSize='9'>
-              llama-3.3-70b
+              llama-3.3-70b-versatile
             </text>
             <text x='470' y='118' textAnchor='middle' fill='#e9d5ff' fontSize='9'>
-              Tool calling · stepCountIs(10)
+              Function calling · max 10 loops
             </text>
 
             {/* ── CIRCLE WALLETS ── */}
@@ -292,8 +292,8 @@ export default function ArchitecturePage() {
               markerEnd='url(#arrow-blue)'
               strokeDasharray='4,2'
             />
-            <text x='380' y='145' fill='#818cf8' fontSize='8'>
-              messages
+            <text x='370' y='145' fill='#818cf8' fontSize='8'>
+              chat request
             </text>
 
             {/* LLM → App (tool calls) */}
@@ -307,8 +307,8 @@ export default function ArchitecturePage() {
               markerEnd='url(#arrow-blue)'
               strokeDasharray='4,2'
             />
-            <text x='335' y='160' fill='#818cf8' fontSize='8'>
-              tool_call
+            <text x='325' y='160' fill='#818cf8' fontSize='8'>
+              tool_calls response
             </text>
 
             {/* App → Circle Wallets */}
@@ -399,7 +399,7 @@ export default function ArchitecturePage() {
               strokeDasharray='4,2'
             />
             <text x='115' y='464' fill='#818cf8' fontSize='8'>
-              AI SDK stream
+              Groq SDK stream
             </text>
             <line x1='200' y1='460' x2='230' y2='460' stroke='#10b981' strokeWidth='1.5' />
             <text x='235' y='464' fill='#10b981' fontSize='8'>
@@ -437,7 +437,7 @@ export default function ArchitecturePage() {
               color: 'text-violet-400',
               bg: 'bg-violet-600/10 border-violet-500/20',
               title: 'LLM Reasoning',
-              desc: 'Groq LLM (llama-3.3-70b) decides which paid APIs to call to fulfill the task',
+              desc: 'Groq LLM (llama-3.3-70b-versatile) decides which tool to call via function calling',
             },
             {
               step: '03',

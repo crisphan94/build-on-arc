@@ -163,17 +163,14 @@ const tools: ChatCompletionTool[] = [
 ]
 
 export async function POST(req: Request) {
-  console.log('[agent] ========== NEW REQUEST ==========')
   const { messages, budget = 5 } = (await req.json()) as {
     messages: { role: string; content: string }[]
     budget?: number
   }
-  console.log('[agent] Messages:', messages.length, 'Budget:', budget)
 
   let agentAddress: string
   try {
     agentAddress = await getCircleWalletAddress()
-    console.log('[agent] Agent address:', agentAddress)
   } catch {
     return new Response(
       JSON.stringify({
@@ -195,16 +192,12 @@ export async function POST(req: Request) {
     serviceId: string,
     params?: Record<string, string>,
   ): Promise<Record<string, unknown>> {
-    console.log(`[agent] callService START: ${serviceId}`, params)
     if (budgetExhausted()) {
-      console.log('[agent] Budget exhausted!')
       return { error: 'Budget exhausted. Cannot make more API calls.' }
     }
     try {
-      console.log(`[agent] Calling agentPay for ${serviceId}...`)
       const result = await agentPay(serviceId, baseUrl, params)
       spentBaseUnits += COST_PER_CALL
-      console.log(`[agent] callService SUCCESS: ${serviceId}, spent: $${result.formattedAmount}`)
       return {
         ...result.data,
         _payment: { paid: `$${result.formattedAmount} USDC`, payer: agentAddress },
@@ -216,9 +209,7 @@ export async function POST(req: Request) {
     }
   }
 
-  // Tool execution handler
   async function executeTool(toolName: string, argsJson: string): Promise<Record<string, unknown>> {
-    console.log(`[agent] Executing tool: ${toolName}`, argsJson)
     const args = JSON.parse(argsJson)
 
     switch (toolName) {
@@ -294,21 +285,17 @@ export async function POST(req: Request) {
 
         while (iteration < maxIterations) {
           iteration++
-          console.log(`[agent] === Iteration ${iteration} ===`)
-
-          // Call Groq API
           let completion
           try {
             completion = await groq.chat.completions.create({
               model: 'llama-3.3-70b-versatile',
               messages: conversationMessages,
               tools,
-              tool_choice: iteration === 1 ? 'required' : 'auto', // Force tool call on first iteration
+              tool_choice: iteration === 1 ? 'required' : 'auto'
               temperature: 0.5,
               max_tokens: 4096,
             })
           } catch (err: unknown) {
-            // Handle rate limit errors
             if (
               err &&
               typeof err === 'object' &&
@@ -325,7 +312,6 @@ export async function POST(req: Request) {
               })
               break
             }
-            // Other errors
             const errMsg = err instanceof Error ? err.message : 'Groq API error'
             console.error('[agent] Groq API error:', errMsg)
             send({ type: 'error', error: `AI service error: ${errMsg}` })
@@ -338,36 +324,21 @@ export async function POST(req: Request) {
             break
           }
 
-          console.log('[agent] Response:', {
-            role: message.role,
-            hasContent: !!message.content,
-            toolCalls: message.tool_calls?.length ?? 0,
-          })
-
-          // Add assistant message to conversation
+          conversationMessages.push(message)
           conversationMessages.push(message)
 
-          // If there are tool calls, execute them
           if (message.tool_calls && message.tool_calls.length > 0) {
             let hasToolError = false
             for (const toolCall of message.tool_calls) {
               const toolName = toolCall.function.name
               const toolArgs = toolCall.function.arguments
 
-              console.log(`[agent] Tool call: ${toolName}`, toolArgs)
               send({ type: 'tool-start', toolCallId: toolCall.id, toolName })
 
-              // Execute tool
               const toolResult = await executeTool(toolName, toolArgs)
-              console.log(`[agent] Tool result:`, toolResult)
-
-              // Check if tool returned error
               if (toolResult && typeof toolResult === 'object' && 'error' in toolResult) {
                 hasToolError = true
-                console.error('[agent] Tool execution failed, stopping...')
               }
-
-              // Add tool result to conversation
               conversationMessages.push({
                 role: 'tool',
                 tool_call_id: toolCall.id,
@@ -377,9 +348,7 @@ export async function POST(req: Request) {
               send({ type: 'tool-done', toolCallId: toolCall.id, toolName, output: toolResult })
             }
 
-            // If tool failed, ask LLM for final error response then stop
             if (hasToolError) {
-              console.log('[agent] Getting error response from LLM...')
               try {
                 const errorCompletion = await groq.chat.completions.create({
                   model: 'llama-3.3-70b-versatile',
@@ -404,7 +373,6 @@ export async function POST(req: Request) {
                   totalSpent: (spentBaseUnits / 1_000_000).toFixed(2),
                 })
               } catch (err: unknown) {
-                // If rate limit hit while getting error response, just send simple error
                 if (
                   err &&
                   typeof err === 'object' &&
@@ -414,7 +382,8 @@ export async function POST(req: Request) {
                 ) {
                   send({
                     type: 'error',
-                    error: 'Groq API credits have been used up for today. Please come back tomorrow 🙂',
+                    error:
+                      'Groq API credits have been used up for today. Please come back tomorrow 🙂',
                   })
                 } else {
                   const errMsg = err instanceof Error ? err.message : 'Unknown error'
@@ -424,22 +393,15 @@ export async function POST(req: Request) {
               break
             }
 
-            // Continue to next iteration to get final response
             continue
           }
-
-          // If no tool calls, stream the final text response
           if (message.content) {
-            // Send text as deltas
             const words = message.content.split(' ')
             for (const word of words) {
               send({ type: 'text-delta', delta: word + ' ' })
-              // Small delay for streaming effect
               await new Promise((resolve) => setTimeout(resolve, 20))
             }
           }
-
-          // Done
           send({
             type: 'finish',
             finishReason: completion.choices[0]?.finish_reason ?? 'stop',

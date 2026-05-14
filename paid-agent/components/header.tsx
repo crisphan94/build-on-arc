@@ -52,21 +52,12 @@ export function Header() {
             Architecture
           </Link>
           <Link
-            href='https://developers.circle.com/gateway/nanopayments'
+            href='https://faucet.circle.com'
             target='_blank'
             rel='noopener noreferrer'
             className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
           >
-            Docs
-            <ExternalLink className='h-3 w-3' />
-          </Link>
-          <Link
-            href='https://testnet.arcscan.app'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='hidden md:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
-          >
-            ArcScan
+            Faucet
             <ExternalLink className='h-3 w-3' />
           </Link>
           <ConnectButton

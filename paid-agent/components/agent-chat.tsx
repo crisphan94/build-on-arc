@@ -14,14 +14,11 @@ const SUGGESTED_TASKS = [
 
 const DEFAULT_BUDGET = 10
 
-// ── Chat view ─────────────────────────────────────────────────────────────────
-
 interface ChatViewProps {
   budget: number
 }
 
-// ── localStorage balance tracking (Circle settles async, on-chain lags) ───────
-const BALANCE_KEY = 'arc-gateway-balance-state' // Changed from agent-balance to gateway-balance
+const BALANCE_KEY = 'arc-gateway-balance-state'
 
 interface StoredBalanceState {
   pendingSpent: number
@@ -30,10 +27,8 @@ interface StoredBalanceState {
 
 function loadStoredBalance(): StoredBalanceState {
   try {
-    // Clear old cache key if exists
     const oldKey = 'arc-agent-balance-state'
     if (localStorage.getItem(oldKey)) {
-      console.log('[balance] Clearing old cache key:', oldKey)
       localStorage.removeItem(oldKey)
     }
 
@@ -59,42 +54,23 @@ function ChatView({ budget }: ChatViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { messages, isLoading, error, sendMessage, reset } = useAgentChat({ budget })
 
-  // Fetch gateway balance (used for payments)
   const fetchBalance = useCallback(async () => {
     try {
       const res = await fetch('/api/agent-gateway-balance')
       const d = (await res.json()) as { gatewayBalance?: number; address?: string; error?: string }
-      console.log('[balance] API response:', JSON.stringify(d))
-      if (d.error) {
-        console.error('[balance] API error:', d.error)
-        return
-      }
-      if (d.gatewayBalance === undefined) return
+      if (d.error || d.gatewayBalance === undefined) return
 
       const gatewayBalance = d.gatewayBalance
       const stored = loadStoredBalance()
-      console.log('[balance] Stored state:', stored)
       let pending = stored.pendingSpent
-
-      // Detect on-chain settlement: balance dropped → Circle settled some payments
       if (stored.lastOnChain !== null && gatewayBalance < stored.lastOnChain) {
         const settled = stored.lastOnChain - gatewayBalance
         pending = Math.max(0, pending - settled)
-        console.log('[balance] Detected settlement, new pending:', pending)
       }
 
       pendingSpentRef.current = pending
       saveStoredBalance({ pendingSpent: pending, lastOnChain: gatewayBalance })
       const finalBalance = Math.max(0, gatewayBalance - pending)
-      console.log(
-        '[balance] Final display:',
-        finalBalance,
-        '(gateway:',
-        gatewayBalance,
-        'pending:',
-        pending,
-        ')',
-      )
       setDisplayBalance(finalBalance)
     } catch (err) {
       console.error('[balance] Fetch error:', err)
@@ -105,23 +81,16 @@ function ChatView({ budget }: ChatViewProps) {
     fetchBalance()
   }, [fetchBalance])
 
-  // Re-fetch after agent finishes responding
   useEffect(() => {
     if (!isLoading) fetchBalance()
   }, [isLoading, fetchBalance])
-
-  // Auto-scroll to bottom whenever messages update or loading state changes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
-
-  // Session spent = number of completed tool calls this session
   const sessionSpent = messages.reduce((sum, m) => {
     if (m.role !== 'assistant') return sum
     return sum + (m.toolCalls?.filter((t) => t.state !== 'pending').length ?? 0)
   }, 0)
-
-  // Sync sessionSpent → localStorage pending so balance persists across reloads
   const prevSessionSpentRef = useRef(0)
   useEffect(() => {
     const delta = sessionSpent - prevSessionSpentRef.current
@@ -221,14 +190,12 @@ function ChatView({ budget }: ChatViewProps) {
         <AgentFundModal onClose={() => setShowFundModal(false)} onSuccess={handleFundSuccess} />
       )}
 
-      {/* Error banner */}
       {error && (
         <div className='rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3'>
           <p className='text-sm text-red-200 leading-relaxed'>{error}</p>
         </div>
       )}
 
-      {/* Chat messages */}
       <div className='glass rounded-2xl min-h-100 max-h-150 overflow-y-auto p-4 flex flex-col gap-4'>
         {messages.length === 0 && (
           <div className='flex flex-col items-center justify-center flex-1 py-16 gap-4'>
@@ -273,7 +240,6 @@ function ChatView({ budget }: ChatViewProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <form onSubmit={handleSubmit} className='flex gap-2'>
         <input
           value={localInput}
@@ -299,8 +265,6 @@ function ChatView({ budget }: ChatViewProps) {
     </div>
   )
 }
-
-// ── Main export ───────────────────────────────────────────────────────────────
 
 export function AgentChat() {
   return <ChatView budget={DEFAULT_BUDGET} />
