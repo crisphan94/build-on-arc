@@ -11,7 +11,12 @@ export function useGatewayBalance(address: `0x${string}` | undefined) {
     address,
     token: USDC_ADDRESS,
     chainId: arcTestnet.id,
-    query: { enabled: !!address },
+    query: {
+      enabled: !!address,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+    },
   })
 
   const { data: gatewayRaw, refetch: refetchGateway } = useReadContract({
@@ -20,7 +25,12 @@ export function useGatewayBalance(address: `0x${string}` | undefined) {
     functionName: 'availableBalance',
     args: [USDC_ADDRESS, address!],
     chainId: arcTestnet.id,
-    query: { enabled: !!address },
+    query: {
+      enabled: !!address,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+    },
   })
 
   // Stable reference so BalanceCard's useEffect doesn't re-run every render

@@ -91,51 +91,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ serv
 
   const requirements = buildPaymentRequired(serviceId, req.url).accepts[0]
 
-  // Debug: log what we're sending to Circle
-  const authObj = (
-    paymentPayload as Record<string, unknown> & {
-      payload?: { authorization?: Record<string, unknown> }
-    }
-  ).payload?.authorization
-  const now = Math.floor(Date.now() / 1000)
-  console.log('[settle] requirements.maxTimeoutSeconds:', requirements.maxTimeoutSeconds)
-  console.log('[settle] authorization:', JSON.stringify(authObj, null, 2))
-  if (authObj?.validBefore) {
-    const validBefore = parseInt(authObj.validBefore as string)
-    console.log(
-      '[settle] validBefore - now =',
-      validBefore - now,
-      'seconds (',
-      ((validBefore - now) / 86400).toFixed(1),
-      'days)',
-    )
-  }
-
   let settleResult
   try {
-    // Verify first — gives a clearer invalidReason than settle alone
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const verifyResult = await facilitator.verify(paymentPayload as any, requirements as any)
-    console.log('[verify] result:', JSON.stringify(verifyResult))
     if (!verifyResult.isValid) {
-      console.error('[verify] INVALID:', verifyResult.invalidReason)
       return NextResponse.json(
         { error: `Payment invalid: ${verifyResult.invalidReason}` },
         { status: 402 },
       )
     }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     settleResult = await facilitator.settle(paymentPayload as any, requirements as any)
-    console.log('[settle] result:', JSON.stringify(settleResult))
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[settle] exception:', message)
     return NextResponse.json({ error: `Settlement error: ${message}` }, { status: 402 })
   }
 
   if (!settleResult.success) {
-    console.error('[settle] FAILED:', settleResult.errorReason)
     return NextResponse.json(
       { error: `Payment settlement failed: ${settleResult.errorReason}` },
       { status: 402 },
@@ -175,8 +148,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ serv
   })
 }
 
-// Shared Groq client — returns null on quota error instead of throwing
-async function geminiGenerate(prompt: string): Promise<string | null> {
+async function groqGenerate(prompt: string): Promise<string | null> {
   try {
     const groq = createGroq({ apiKey: process.env.GROQ_API_KEY ?? '' })
     const { text } = await generateText({
@@ -291,7 +263,49 @@ async function fetchServiceData(
       }
 
       // Parse requested coins from query param, fallback to defaults
+      const topParam = q.get('top')
       const coinParam = q.get('coins') ?? ''
+
+      // Handle "top N coins by market cap"
+      if (topParam) {
+        const topN = parseInt(topParam, 10)
+        if (isNaN(topN) || topN < 1 || topN > 100) {
+          return { error: 'Invalid top parameter. Must be between 1 and 100.' }
+        }
+
+        try {
+          const res = await fetch(
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${topN}&page=1&sparkline=false`,
+            { next: { revalidate: 60 } },
+          )
+          const markets = (await res.json()) as Array<{
+            id: string
+            symbol: string
+            name: string
+            current_price: number
+            price_change_percentage_24h: number
+            market_cap: number
+            market_cap_rank: number
+          }>
+
+          const prices: Record<string, unknown> = {}
+          for (const coin of markets) {
+            prices[coin.symbol.toUpperCase()] = {
+              name: coin.name,
+              price: coin.current_price,
+              change24h: parseFloat((coin.price_change_percentage_24h ?? 0).toFixed(2)),
+              marketCap: coin.market_cap,
+              rank: coin.market_cap_rank,
+            }
+          }
+
+          return { ...prices, source: 'CoinGecko', timestamp: Date.now(), topN }
+        } catch {
+          return { error: 'Failed to fetch top coins from CoinGecko' }
+        }
+      }
+
+      // Handle specific coin symbols
       const requestedSymbols = coinParam
         .split(',')
         .map((s) => s.trim().toUpperCase())
@@ -398,7 +412,7 @@ async function fetchServiceData(
 
     case 'ai-text': {
       const topic = q.get('topic') ?? 'Arc Network and Circle Gateway nanopayments'
-      const text = await geminiGenerate(
+      const text = await groqGenerate(
         `Write a concise, insightful paragraph (3-5 sentences) analyzing: ${topic}. Be factual and informative.`,
       )
       if (!text) return { error: 'Groq rate limit exceeded. Retry in a moment.' }
@@ -406,7 +420,7 @@ async function fetchServiceData(
         text,
         topic,
         tokens: text.split(' ').length,
-        model: 'gemini-2.0-flash-lite',
+        model: 'llama-3.1-8b-instant',
         timestamp: Date.now(),
       }
     }
@@ -414,7 +428,7 @@ async function fetchServiceData(
     case 'translate': {
       const text = q.get('text') ?? 'Hello, world!'
       const targetLanguage = q.get('targetLanguage') ?? 'Vietnamese'
-      const translated = await geminiGenerate(
+      const translated = await groqGenerate(
         `Translate the following text to ${targetLanguage}. Reply with ONLY the translated text, nothing else.\n\nText: ${text}`,
       )
       if (!translated) return { error: 'Groq rate limit exceeded. Retry in a moment.' }
@@ -430,7 +444,7 @@ async function fetchServiceData(
 
     case 'code-review': {
       const code = q.get('code') ?? '// no code provided'
-      const raw = await geminiGenerate(
+      const raw = await groqGenerate(
         `Review this code for quality, bugs, and security issues. Respond in JSON with fields: score (0-100), severity ("none"|"low"|"medium"|"high"), issues (number), suggestions (array of strings, max 3).\n\nCode:\n${code}`,
       )
       if (!raw) return { error: 'Groq rate limit exceeded. Retry in a moment.' }
@@ -449,7 +463,7 @@ async function fetchServiceData(
 
     case 'sentiment': {
       const text = q.get('text') ?? 'No text provided'
-      const raw = await geminiGenerate(
+      const raw = await groqGenerate(
         `Analyze the sentiment of this text. Respond in JSON with fields: label ("positive"|"negative"|"neutral"), score (0.0-1.0), reason (one sentence explanation).\n\nText: ${text}`,
       )
       if (!raw) return { error: 'Groq rate limit exceeded. Retry in a moment.' }

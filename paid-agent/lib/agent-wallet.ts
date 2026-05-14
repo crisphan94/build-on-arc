@@ -1,7 +1,3 @@
-/**
- * Server-side agent wallet — signs EIP-3009 TransferWithAuthorization
- * using AGENT_PRIVATE_KEY env var. No browser, no MetaMask required.
- */
 import { privateKeyToAccount } from 'viem/accounts'
 import { createWalletClient, http } from 'viem'
 import {
@@ -47,15 +43,11 @@ export async function signAgentPayment(params: {
   verifyingContract: `0x${string}`
 }): Promise<AgentSignatureResult> {
   const account = getAgentAccount()
-  const walletClient = createWalletClient({
-    account,
-    chain: arcTestnet,
-    transport: http(),
-  })
+  const walletClient = createWalletClient({ account, chain: arcTestnet, transport: http() })
 
   const now = Math.floor(Date.now() / 1000)
-  const validAfter = BigInt(now - 600) // 10 min grace for clock skew
-  const validBefore = BigInt(now + GATEWAY_AUTH_VALIDITY_SECONDS) // 30 days
+  const validAfter = BigInt(now - 600)
+  const validBefore = BigInt(now + GATEWAY_AUTH_VALIDITY_SECONDS)
 
   const nonceBytes = crypto.getRandomValues(new Uint8Array(32))
   const nonce = `0x${Array.from(nonceBytes)

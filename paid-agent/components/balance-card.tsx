@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
@@ -28,20 +28,22 @@ export function BalanceCard({ address, onRefetchReady }: BalanceCardProps) {
   const [depositModal, setDepositModal] = useState(false)
   const [withdrawModal, setWithdrawModal] = useState(false)
 
-  // Expose refetch to parent (e.g. to refresh after a payment).
-  // Refetch at 2s, 5s, 12s after payment — Circle batches off-chain so on-chain
-  // state may take a few seconds to reflect the deduction.
+  const refetchRef = useRef(refetch)
+  refetchRef.current = refetch
+
   useEffect(() => {
-    onRefetchReady?.(() => {
+    if (!onRefetchReady) return
+
+    const refetchWithSchedule = () => {
       setRefreshing(true)
       const t1 = setTimeout(() => {
-        refetch()
+        refetchRef.current()
       }, 2_000)
       const t2 = setTimeout(() => {
-        refetch()
+        refetchRef.current()
       }, 5_000)
       const t3 = setTimeout(() => {
-        refetch()
+        refetchRef.current()
         setRefreshing(false)
       }, 12_000)
       return () => {
@@ -49,8 +51,10 @@ export function BalanceCard({ address, onRefetchReady }: BalanceCardProps) {
         clearTimeout(t2)
         clearTimeout(t3)
       }
-    })
-  }, [refetch, onRefetchReady])
+    }
+
+    onRefetchReady(refetchWithSchedule)
+  }, [onRefetchReady])
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -67,7 +71,9 @@ export function BalanceCard({ address, onRefetchReady }: BalanceCardProps) {
             <div className='flex items-start justify-between mb-4'>
               <div className='flex items-center gap-2 text-[#5b9fd6]'>
                 <Building2 className='h-4 w-4' />
-                <span className='text-xs font-medium uppercase tracking-wide'>Gateway Balance</span>
+                <span className='text-xs font-medium uppercase tracking-wide'>
+                  Your Gateway Balance
+                </span>
               </div>
               <button
                 onClick={handleRefresh}
@@ -84,7 +90,7 @@ export function BalanceCard({ address, onRefetchReady }: BalanceCardProps) {
               <span className='ml-2 text-sm text-[#5b9fd6] font-medium'>USDC</span>
             </div>
             <p className='text-xs text-slate-500 mb-4'>
-              {gatewayBalance !== null ? 'Available for gasless payments' : 'Loading…'}
+              {gatewayBalance !== null ? 'For manual service payments' : 'Loading…'}
             </p>
             <div className='flex gap-2'>
               <Button
@@ -113,9 +119,18 @@ export function BalanceCard({ address, onRefetchReady }: BalanceCardProps) {
         {/* Wallet Balance */}
         <Card className='relative overflow-hidden hover:border-white/[0.15]'>
           <CardContent className='p-5'>
-            <div className='flex items-center gap-2 text-slate-400 mb-4'>
-              <Wallet className='h-4 w-4' />
-              <span className='text-xs font-medium uppercase tracking-wide'>Wallet Balance</span>
+            <div className='flex items-start justify-between mb-4'>
+              <div className='flex items-center gap-2 text-slate-400'>
+                <Wallet className='h-4 w-4' />
+                <span className='text-xs font-medium uppercase tracking-wide'>Wallet Balance</span>
+              </div>
+              <button
+                onClick={handleRefresh}
+                className='text-slate-500 hover:text-slate-300 cursor-pointer rounded-lg p-1 hover:bg-white/5'
+                aria-label='Refresh balance'
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
             </div>
             <div className='mb-1'>
               <span className='text-3xl font-bold text-slate-100 font-space'>
@@ -124,10 +139,9 @@ export function BalanceCard({ address, onRefetchReady }: BalanceCardProps) {
               <span className='ml-2 text-sm text-slate-400 font-medium'>USDC</span>
             </div>
             <p className='text-xs text-slate-500 mb-4'>{shortAddress(address)}</p>
-            <div className='rounded-xl bg-white/[0.04] border border-white/[0.06] p-3'>
+            <div className='rounded-xl bg-white/4 border border-white/6 p-3'>
               <p className='text-xs text-slate-500 leading-relaxed'>
-                Deposit USDC into Gateway once, then make unlimited gasless micro-payments without
-                on-chain fees.
+                Deposit to Gateway for manual service payments. Agent uses separate wallet.
               </p>
             </div>
           </CardContent>

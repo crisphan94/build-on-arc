@@ -1,188 +1,42 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import {
-  Bot,
-  Send,
-  DollarSign,
-  Zap,
-  RotateCcw,
-  Wallet,
-  ChevronRight,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react'
+import { Bot, Send, Zap, RotateCcw, Loader2, Plus, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAgentChat } from '@/hooks/useAgentChat'
 import { AgentMessage } from '@/components/agent-message'
+import { AgentFundModal } from '@/components/agent-fund-modal'
 
 const SUGGESTED_TASKS = [
-  'What is the weather like in Da Nang City today?',
-  'Give me a full BTC market analysis with sentiment',
-  'Which token is pumping the hardest today?',
-  'Analyze the current crypto market and summarize key trends',
+  'What is the current BTC price?',
+  'What are the top 3 coins by market cap?',
 ]
 
-const BUDGET_PRESETS = [1, 3, 5, 10]
-
-// ── Setup screen ──────────────────────────────────────────────────────────────
-
-interface BudgetSetupProps {
-  onStart: (budget: number) => void
-}
-
-function BudgetSetup({ onStart }: BudgetSetupProps) {
-  const [walletBalance, setWalletBalance] = useState<number | null>(null)
-  const [balanceError, setBalanceError] = useState(false)
-  const [selectedBudget, setSelectedBudget] = useState(3)
-  const [customBudget, setCustomBudget] = useState('')
-  const [isCustom, setIsCustom] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/agent-balance')
-      .then((r) => r.json())
-      .then((d: { usdc?: number; error?: string }) => {
-        if (d.usdc !== undefined) setWalletBalance(d.usdc)
-        else setBalanceError(true)
-      })
-      .catch(() => setBalanceError(true))
-  }, [])
-
-  const effectiveBudget = isCustom ? parseFloat(customBudget) || 0 : selectedBudget
-  const isAffordable = walletBalance === null || effectiveBudget <= walletBalance
-  const canStart = effectiveBudget > 0 && isAffordable
-
-  return (
-    <div className='flex flex-col items-center gap-8 py-8 px-4 max-w-md mx-auto'>
-      {/* Icon */}
-      <div className='h-20 w-20 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center'>
-        <Bot className='h-10 w-10 text-indigo-400' />
-      </div>
-
-      {/* Headline */}
-      <div className='text-center'>
-        <h2 className='text-xl font-semibold text-slate-100 mb-2'>Set session budget</h2>
-        <p className='text-slate-400 text-sm leading-relaxed'>
-          The agent pays for each API call autonomously via Circle Gateway Nanopayments. Set a
-          spending limit for this session.
-        </p>
-      </div>
-
-      {/* Wallet balance badge */}
-      <div className='w-full glass rounded-xl px-4 py-3 flex items-center gap-3'>
-        <Wallet className='h-5 w-5 text-slate-500 shrink-0' />
-        <div className='flex-1'>
-          <p className='text-xs text-slate-500 mb-0.5'>Available in GatewayWallet</p>
-          {walletBalance === null && !balanceError ? (
-            <div className='flex items-center gap-2'>
-              <Loader2 className='h-3.5 w-3.5 animate-spin text-slate-500' />
-              <span className='text-sm text-slate-500'>Fetching balance…</span>
-            </div>
-          ) : balanceError ? (
-            <div className='flex items-center gap-1.5 text-amber-400 text-sm'>
-              <AlertCircle className='h-3.5 w-3.5' />
-              Could not fetch balance
-            </div>
-          ) : (
-            <p className='text-base font-semibold text-slate-100'>
-              {walletBalance!.toFixed(2)} USDC
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Budget presets */}
-      <div className='w-full'>
-        <p className='text-xs text-slate-500 mb-3 uppercase tracking-wider'>Session limit</p>
-        <div className='grid grid-cols-4 gap-2 mb-3'>
-          {BUDGET_PRESETS.map((amt) => (
-            <button
-              key={amt}
-              onClick={() => {
-                setSelectedBudget(amt)
-                setIsCustom(false)
-              }}
-              className={cn(
-                'py-2.5 rounded-xl text-sm font-medium border cursor-pointer transition-all',
-                !isCustom && selectedBudget === amt
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'bg-white/4 border-white/8 text-slate-400 hover:border-white/20 hover:text-slate-200',
-              )}
-            >
-              ${amt}
-            </button>
-          ))}
-        </div>
-
-        {/* Custom input */}
-        <div
-          onClick={() => setIsCustom(true)}
-          className={cn(
-            'flex items-center gap-2 rounded-xl px-4 py-2.5 border cursor-text transition-all',
-            isCustom
-              ? 'bg-indigo-600/10 border-indigo-500/50'
-              : 'bg-white/4 border-white/8 hover:border-white/20',
-          )}
-        >
-          <DollarSign className='h-4 w-4 text-slate-500' />
-          <input
-            type='number'
-            min={1}
-            max={100}
-            placeholder='Custom amount'
-            value={customBudget}
-            onChange={(e) => {
-              setCustomBudget(e.target.value)
-              setIsCustom(true)
-            }}
-            className='flex-1 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 outline-none'
-          />
-          <span className='text-xs text-slate-500'>USDC</span>
-        </div>
-
-        {!isAffordable && (
-          <p className='text-xs text-red-400 mt-2 flex items-center gap-1.5'>
-            <AlertCircle className='h-3.5 w-3.5' />
-            Budget exceeds available GatewayWallet balance ({walletBalance!.toFixed(2)} USDC)
-          </p>
-        )}
-      </div>
-
-      {/* CTA */}
-      <button
-        disabled={!canStart}
-        onClick={() => onStart(effectiveBudget)}
-        className='w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium cursor-pointer transition-colors'
-      >
-        Start Agent
-        <ChevronRight className='h-4 w-4' />
-      </button>
-
-      <p className='text-xs text-slate-600 text-center flex items-center gap-1.5'>
-        <Zap className='h-3 w-3 text-emerald-600' />
-        Each API call deducts $1 USDC · Zero gas · EIP-3009 signed
-      </p>
-    </div>
-  )
-}
+const DEFAULT_BUDGET = 10
 
 // ── Chat view ─────────────────────────────────────────────────────────────────
 
 interface ChatViewProps {
   budget: number
-  onReset: () => void
 }
 
 // ── localStorage balance tracking (Circle settles async, on-chain lags) ───────
-const BALANCE_KEY = 'arc-agent-balance-state'
+const BALANCE_KEY = 'arc-gateway-balance-state' // Changed from agent-balance to gateway-balance
 
 interface StoredBalanceState {
-  pendingSpent: number // USDC spent but not yet settled on-chain
-  lastOnChain: number | null // last raw on-chain value seen
+  pendingSpent: number
+  lastOnChain: number | null
 }
 
 function loadStoredBalance(): StoredBalanceState {
   try {
+    // Clear old cache key if exists
+    const oldKey = 'arc-agent-balance-state'
+    if (localStorage.getItem(oldKey)) {
+      console.log('[balance] Clearing old cache key:', oldKey)
+      localStorage.removeItem(oldKey)
+    }
+
     const parsed = JSON.parse(
       localStorage.getItem(BALANCE_KEY) ?? '{}',
     ) as Partial<StoredBalanceState>
@@ -197,37 +51,53 @@ function saveStoredBalance(s: StoredBalanceState) {
   } catch {}
 }
 
-function ChatView({ budget, onReset }: ChatViewProps) {
+function ChatView({ budget }: ChatViewProps) {
   const [localInput, setLocalInput] = useState('')
-  // displayBalance = onChainBalance - pendingSpent (adjusted for unconfirmed payments)
   const [displayBalance, setDisplayBalance] = useState<number | null>(null)
+  const [showFundModal, setShowFundModal] = useState(false)
   const pendingSpentRef = useRef(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { messages, isLoading, error, sendMessage, reset } = useAgentChat({ budget })
 
-  // Fetch on-chain balance and reconcile with locally-tracked pending spend.
-  // Circle settles in batches so availableBalance lags; we subtract pending locally.
+  // Fetch gateway balance (used for payments)
   const fetchBalance = useCallback(async () => {
     try {
-      const res = await fetch('/api/agent-balance')
-      const d = (await res.json()) as { usdc?: number }
-      if (d.usdc === undefined) return
+      const res = await fetch('/api/agent-gateway-balance')
+      const d = (await res.json()) as { gatewayBalance?: number; address?: string; error?: string }
+      console.log('[balance] API response:', JSON.stringify(d))
+      if (d.error) {
+        console.error('[balance] API error:', d.error)
+        return
+      }
+      if (d.gatewayBalance === undefined) return
 
-      const onChain = d.usdc
+      const gatewayBalance = d.gatewayBalance
       const stored = loadStoredBalance()
+      console.log('[balance] Stored state:', stored)
       let pending = stored.pendingSpent
 
       // Detect on-chain settlement: balance dropped → Circle settled some payments
-      if (stored.lastOnChain !== null && onChain < stored.lastOnChain) {
-        const settled = stored.lastOnChain - onChain
+      if (stored.lastOnChain !== null && gatewayBalance < stored.lastOnChain) {
+        const settled = stored.lastOnChain - gatewayBalance
         pending = Math.max(0, pending - settled)
+        console.log('[balance] Detected settlement, new pending:', pending)
       }
 
       pendingSpentRef.current = pending
-      saveStoredBalance({ pendingSpent: pending, lastOnChain: onChain })
-      setDisplayBalance(Math.max(0, onChain - pending))
-    } catch {
-      // ignore
+      saveStoredBalance({ pendingSpent: pending, lastOnChain: gatewayBalance })
+      const finalBalance = Math.max(0, gatewayBalance - pending)
+      console.log(
+        '[balance] Final display:',
+        finalBalance,
+        '(gateway:',
+        gatewayBalance,
+        'pending:',
+        pending,
+        ')',
+      )
+      setDisplayBalance(finalBalance)
+    } catch (err) {
+      console.error('[balance] Fetch error:', err)
     }
   }, [])
 
@@ -276,7 +146,10 @@ function ChatView({ budget, onReset }: ChatViewProps) {
 
   const handleReset = () => {
     reset()
-    onReset()
+  }
+
+  const handleFundSuccess = () => {
+    fetchBalance()
   }
 
   return (
@@ -284,9 +157,8 @@ function ChatView({ budget, onReset }: ChatViewProps) {
       {/* Stats bar */}
       <div className='flex items-center justify-between gap-4'>
         <div className='flex items-center gap-4'>
-          {/* Real on-chain wallet balance (minus locally-tracked pending spend) */}
           <div>
-            <p className='text-xs text-slate-500'>Wallet balance</p>
+            <p className='text-xs text-slate-500'>Gateway Balance</p>
             {displayBalance === null ? (
               <div className='flex items-center gap-1.5'>
                 <Loader2 className='h-3.5 w-3.5 animate-spin text-slate-600' />
@@ -299,8 +171,16 @@ function ChatView({ budget, onReset }: ChatViewProps) {
               </p>
             )}
           </div>
+
+          <button
+            onClick={() => setShowFundModal(true)}
+            className='flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-600/30 text-xs font-medium cursor-pointer transition-colors'
+          >
+            <Plus className='h-3.5 w-3.5' />
+            Fund
+          </button>
+
           <div className='h-8 w-px bg-white/8' />
-          {/* Session limit */}
           <div>
             <p className='text-xs text-slate-500'>Session limit</p>
             <p
@@ -315,31 +195,36 @@ function ChatView({ budget, onReset }: ChatViewProps) {
           </div>
         </div>
 
-        {/* Budget progress bar inline */}
-        <div className='flex-1 h-1.5 rounded-full bg-white/6 overflow-hidden max-w-48'>
-          <div
-            className={cn(
-              'h-full rounded-full transition-all duration-500',
-              budgetPct > 50 ? 'bg-emerald-500' : budgetPct > 20 ? 'bg-amber-500' : 'bg-red-500',
-            )}
-            style={{ width: `${budgetPct}%` }}
-          />
-        </div>
+        <div className='flex items-center gap-3'>
+          <div className='flex-1 h-1.5 rounded-full bg-white/6 overflow-hidden w-32'>
+            <div
+              className={cn(
+                'h-full rounded-full transition-all duration-500',
+                budgetPct > 50 ? 'bg-emerald-500' : budgetPct > 20 ? 'bg-amber-500' : 'bg-red-500',
+              )}
+              style={{ width: `${budgetPct}%` }}
+            />
+          </div>
 
-        <button
-          onClick={handleReset}
-          className='flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 cursor-pointer transition-colors'
-          title='Reset and change budget'
-        >
-          <RotateCcw className='h-3.5 w-3.5' />
-          Reset
-        </button>
+          <button
+            onClick={handleReset}
+            className='flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 cursor-pointer transition-colors'
+            title='Reset session'
+          >
+            <RotateCcw className='h-3.5 w-3.5' />
+            Reset
+          </button>
+        </div>
       </div>
+
+      {showFundModal && (
+        <AgentFundModal onClose={() => setShowFundModal(false)} onSuccess={handleFundSuccess} />
+      )}
 
       {/* Error banner */}
       {error && (
-        <div className='rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400'>
-          {error}
+        <div className='rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3'>
+          <p className='text-sm text-red-200 leading-relaxed'>{error}</p>
         </div>
       )}
 
@@ -408,7 +293,7 @@ function ChatView({ budget, onReset }: ChatViewProps) {
 
       <p className='text-xs text-slate-600 text-center flex items-center justify-center gap-1.5'>
         <Zap className='h-3 w-3 text-emerald-600' />
-        Each API call deducts $1 USDC from the agent wallet via Circle Gateway Nanopayments · Zero
+        Each API call deducts $1 USDC from gateway balance via Circle Gateway Nanopayments · Zero
         gas
       </p>
     </div>
@@ -418,11 +303,5 @@ function ChatView({ budget, onReset }: ChatViewProps) {
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function AgentChat() {
-  const [budget, setBudget] = useState<number | null>(null)
-
-  if (budget === null) {
-    return <BudgetSetup onStart={(b) => setBudget(b)} />
-  }
-
-  return <ChatView budget={budget} onReset={() => setBudget(null)} />
+  return <ChatView budget={DEFAULT_BUDGET} />
 }

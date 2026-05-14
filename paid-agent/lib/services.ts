@@ -35,7 +35,7 @@ export const SERVICES: Service[] = [
   {
     id: 'translate',
     name: 'Language Translation',
-    description: 'High-accuracy translation powered by Circle Gateway',
+    description: 'High-accuracy translation powered by Groq llama-3.1-8b-instant',
     price: '1',
     priceDisplay: '$1',
     category: 'AI',

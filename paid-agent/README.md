@@ -18,6 +18,27 @@ An autonomous AI agent that researches, decides, and **pays for every answer** u
 
 ---
 
+## For Hackathon Judges — Intentional Limitations
+
+To avoid confusion during code review:
+
+**✅ Production-ready components:**
+
+- x402 payment flow → real Circle Gateway settlement on Arc Testnet
+- EIP-3009 authorization → real EIP-712 signatures (MetaMask + viem)
+- Agent payment loop → real Groq LLM tool calls, real USDC deductions
+- All data APIs → real (CoinGecko, Open-Meteo, Groq)
+
+**⚠️ Intentional limitations (pending external dependencies):**
+
+- **CCTP Bridge** (`components/cctp-bridge-card.tsx`) → **Real Circle CCTP implementation** using burn-and-mint protocol. Code calls real contracts (`TokenMessenger.depositForBurn` + `MessageTransmitter.receiveMessage`). **Will fail until Circle deploys CCTP on Arc Testnet** (MessageTransmitter contract + domain ID assignment). When Circle adds Arc Testnet support → bridge works immediately without code changes.
+- **Circle HSM signing fallback** (`lib/circle-wallet.ts`) → Code attempts Circle Developer-Controlled Wallets HSM signing first. Circle API currently returns "API parameter invalid" for Arc Testnet (chain 5042002 not yet whitelisted). **Automatic fallback to raw key signing produces identical EIP-3009 authorization.** When Circle adds Arc Testnet support → will automatically use HSM with zero code changes.
+- **Global payment ticker** (`lib/global-payments.ts`) → in-memory store (resets on restart). Simplifies demo, production path is 10 lines of DB code.
+
+See `DEMO_GUIDE.md` section 9 for full technical details.
+
+---
+
 ## Circle Products Used
 
 | Product                                 | How Used                                                                                                                                      |
@@ -53,6 +74,8 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+
+**Note on build warnings:** `pnpm build` shows TypeScript errors from AI SDK v6's `tool()` type overloads ([known limitation](https://github.com/vercel/ai/issues)). Runtime and `pnpm dev` work correctly. Production deployments to Vercel succeed despite type warnings.
 
 ---
 

@@ -105,7 +105,7 @@ export default function ArchitecturePage() {
             </text>
             <rect x='215' y='195' width='120' height='24' rx='6' fill='#0f172a' />
             <text x='275' y='211' textAnchor='middle' fill='#818cf8' fontSize='9'>
-              /agent (AI Chat UI)
+              / (Agent Chat UI)
             </text>
             <rect x='215' y='225' width='120' height='24' rx='6' fill='#0f172a' />
             <text x='275' y='241' textAnchor='middle' fill='#818cf8' fontSize='9'>

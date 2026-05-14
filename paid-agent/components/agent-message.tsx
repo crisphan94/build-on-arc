@@ -50,6 +50,20 @@ export function AgentMessage({ message }: AgentMessageProps) {
             <p className='text-sm text-slate-200 whitespace-pre-wrap leading-relaxed'>
               {message.content}
             </p>
+            {/* Show total spent if any tools completed */}
+            {(() => {
+              const completedCount = (message.toolCalls ?? []).filter(
+                (tc) => tc.state === 'done',
+              ).length
+              if (completedCount > 0) {
+                return (
+                  <p className='text-xs text-emerald-500 font-mono mt-2 pt-2 border-t border-white/5'>
+                    💳 Total ${completedCount}.00 USDC spent
+                  </p>
+                )
+              }
+              return null
+            })()}
           </div>
         )}
       </div>
@@ -96,7 +110,6 @@ function ToolCallCard({
       <div className='flex-1 min-w-0'>
         <div className='flex items-center gap-2'>
           <span className='text-xs font-medium text-slate-300'>{label} API</span>
-          {isComplete && <span className='text-xs text-emerald-500 font-mono'>-$1.00 USDC</span>}
           {state === 'pending' && (
             <span className='text-xs text-indigo-400'>Paying & fetching...</span>
           )}

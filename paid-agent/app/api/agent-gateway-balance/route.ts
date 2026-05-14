@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
-import { createPublicClient, http, erc20Abi } from 'viem'
-import { USDC_ADDRESS, ARC_TESTNET_CHAIN_ID } from '@/lib/contracts'
+import { createPublicClient, http } from 'viem'
+import {
+  USDC_ADDRESS,
+  ARC_TESTNET_CHAIN_ID,
+  GATEWAY_WALLET_ADDRESS,
+  GATEWAY_WALLET_ABI,
+} from '@/lib/contracts'
 import { getAgentAddress } from '@/lib/agent-wallet'
 
 export const runtime = 'nodejs'
@@ -21,17 +26,21 @@ export async function GET() {
   try {
     const agentAddress = getAgentAddress()
 
-    // Read ERC20 balance directly from USDC contract
+    // Read gateway balance
     const raw = (await publicClient.readContract({
-      address: USDC_ADDRESS,
-      abi: erc20Abi,
-      functionName: 'balanceOf',
-      args: [agentAddress],
+      address: GATEWAY_WALLET_ADDRESS,
+      abi: GATEWAY_WALLET_ABI,
+      functionName: 'availableBalance',
+      args: [USDC_ADDRESS, agentAddress],
     })) as bigint
 
     const usdc = Number(raw) / 1_000_000
 
-    return NextResponse.json({ address: agentAddress, usdc, raw: raw.toString() })
+    return NextResponse.json({
+      address: agentAddress,
+      gatewayBalance: usdc,
+      raw: raw.toString(),
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })

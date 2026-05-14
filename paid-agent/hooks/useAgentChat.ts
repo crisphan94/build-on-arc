@@ -27,7 +27,7 @@ type StreamChunk =
   | { type: 'tool-start'; toolCallId: string; toolName: string }
   | { type: 'tool-done'; toolCallId: string; toolName: string; output: unknown }
   | { type: 'done' }
-  | { type: 'error'; errorText: string }
+  | { type: 'error'; error: string }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ export function useAgentChat({ budget }: UseAgentChatOptions) {
         }
 
         if (chunk.type === 'error') {
-          setError(chunk.errorText)
+          setError(chunk.error)
         }
 
         return m

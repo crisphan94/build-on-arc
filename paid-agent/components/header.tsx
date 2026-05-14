@@ -28,14 +28,26 @@ export function Header() {
         {/* Nav + Wallet */}
         <nav className='flex items-center gap-3'>
           <Link
-            href='/agent'
-            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] cursor-pointer'
+            href='/'
+            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
           >
             Agent
           </Link>
           <Link
+            href='/gateway'
+            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
+          >
+            Gateway
+          </Link>
+          <Link
+            href='/bridge'
+            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
+          >
+            Bridge
+          </Link>
+          <Link
             href='/architecture'
-            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] cursor-pointer'
+            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
           >
             Architecture
           </Link>
@@ -43,7 +55,7 @@ export function Header() {
             href='https://developers.circle.com/gateway/nanopayments'
             target='_blank'
             rel='noopener noreferrer'
-            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] cursor-pointer'
+            className='hidden sm:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
           >
             Docs
             <ExternalLink className='h-3 w-3' />
@@ -52,7 +64,7 @@ export function Header() {
             href='https://testnet.arcscan.app'
             target='_blank'
             rel='noopener noreferrer'
-            className='hidden md:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] cursor-pointer'
+            className='hidden md:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-slate-200 hover:bg-white/5 cursor-pointer'
           >
             ArcScan
             <ExternalLink className='h-3 w-3' />
