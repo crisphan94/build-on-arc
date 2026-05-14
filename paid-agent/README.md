@@ -265,23 +265,6 @@ All simplifications are **production-path** — code is ready to swap in real im
 
 ---
 
-## Hackathon Requirement Compliance
-
-**Track 4: Best Agentic Economy Experience on Arc**
-
-| Requirement            | Implementation                     | Status |
-| ---------------------- | ---------------------------------- | ------ |
-| **Autonomous agent**   | Groq LLM with function calling     | ✅     |
-| **Pays for answers**   | $1 USDC per API call via x402      | ✅     |
-| **Circle Gateway**     | BatchFacilitatorClient settlement  | ✅     |
-| **Arc Testnet**        | Chain ID 5042002, USDC 0x3600...   | ✅     |
-| **USDC settlement**    | EIP-3009 TransferWithAuthorization | ✅     |
-| **Real-time UX**       | SSE streaming with tool feedback   | ✅     |
-| **Circle Wallets**     | HSM signing with fallback          | ✅     |
-| **Production quality** | TypeScript, error handling, tests  | ✅     |
-
----
-
 ## Innovation Highlights
 
 ### 1. First Autonomous AI Payment Agent on Arc
@@ -380,7 +363,7 @@ After discovering AI SDK wrapper bugs, switched to official Groq SDK with manual
 
 ## Future Enhancements
 
-### Short-term (Post-Hackathon)
+### Short-term
 
 1. **CCTP Bridge activation** when Circle deploys on Arc
 2. **Circle HSM signing** when Arc Testnet is whitelisted

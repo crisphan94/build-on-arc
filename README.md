@@ -138,23 +138,6 @@ User → Next.js App → Groq LLM (tool calling)
 
 ---
 
-## Hackathon Requirements Compliance
-
-**Track 4: Best Agentic Economy Experience on Arc**
-
-| Requirement        | Implementation                     | Status |
-| ------------------ | ---------------------------------- | ------ |
-| Autonomous agent   | Groq LLM with function calling     | ✅     |
-| Pays for answers   | $1 USDC per API call via x402      | ✅     |
-| Circle Gateway     | BatchFacilitatorClient settlement  | ✅     |
-| Arc Testnet        | Chain ID 5042002, USDC 0x3600...   | ✅     |
-| USDC settlement    | EIP-3009 TransferWithAuthorization | ✅     |
-| Real-time UX       | SSE streaming with tool feedback   | ✅     |
-| Circle Wallets     | HSM signing with fallback          | ✅     |
-| Production quality | TypeScript strict, error handling  | ✅     |
-
----
-
 ## Testing & Validation
 
 **AgentPay Metrics:**
@@ -275,7 +258,6 @@ build-on-arc/
 ## Links
 
 - **AgentPay Demo:** [View Architecture](./paid-agent/app/architecture/page.tsx)
-- **Hackathon:** [Circle Stablecoins Commerce Stack Challenge](https://app.ignyte.ae/public/challenges/4B436318-C737-F111-9A49-6045BD14D400)
 - **Arc Testnet Explorer:** https://testnet.arcscan.app
 - **Circle Developer Docs:** https://developers.circle.com
 - **Groq Console:** https://console.groq.com
