@@ -141,7 +141,7 @@ export default function ArchitecturePage() {
               Developer-Controlled
             </text>
             <text x='470' y='218' textAnchor='middle' fill='#bae6fd' fontSize='9'>
-              EIP-3009 signing (HSM)
+              EIP-712 signing (HSM)
             </text>
 
             {/* ── x402 DEMO APIs ── */}
@@ -205,13 +205,13 @@ export default function ArchitecturePage() {
               strokeWidth='1'
             />
             <text x='675' y='230' textAnchor='middle' fill='#6ee7b7' fontSize='8'>
-              ① Verify EIP-3009 sig
+              ① Verify EIP-712 authorization
             </text>
             <text x='675' y='244' textAnchor='middle' fill='#6ee7b7' fontSize='8'>
               ② Queue in batch
             </text>
             <text x='675' y='258' textAnchor='middle' fill='#6ee7b7' fontSize='8'>
-              ③ Settle on-chain
+              ③ Settle on-chain (EIP-3009)
             </text>
             <text x='675' y='272' textAnchor='middle' fill='#a7f3d0' fontSize='8'>
               Chain 5042002 · USDC
@@ -384,7 +384,7 @@ export default function ArchitecturePage() {
 
             {/* ── LABELS ── */}
             <text x='450' y='420' textAnchor='middle' fill='#334155' fontSize='9'>
-              ① User sets budget → ② LLM decides tools → ③ Agent signs EIP-3009 → ④ Circle Gateway
+              ① User sets budget → ② LLM decides tools → ③ Agent signs EIP-712 → ④ Circle Gateway
               settles on Arc
             </text>
 
@@ -445,7 +445,7 @@ export default function ArchitecturePage() {
               color: 'text-blue-400',
               bg: 'bg-blue-600/10 border-blue-500/20',
               title: 'Autonomous Payment',
-              desc: 'Agent signs EIP-3009 via Circle Wallets API — no user confirmation needed',
+              desc: 'Agent signs EIP-712 authorization via Circle Wallets API — no user confirmation needed',
             },
             {
               step: '04',
