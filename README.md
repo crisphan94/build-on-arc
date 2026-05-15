@@ -321,4 +321,4 @@ MIT License — See [LICENSE](./LICENSE) file for details
 
 ---
 
-**Welcome to the Agentic Economy on Arc Testnet** 🤖💰
+**Welcome to the Agentic Economy on Arc Testnet**
