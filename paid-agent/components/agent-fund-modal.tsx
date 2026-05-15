@@ -20,7 +20,7 @@ const TRANSFER_PRESETS = [10, 20, 50]
 export function AgentFundModal({ onClose, onSuccess }: AgentFundModalProps) {
   const { address: userAddress } = useAccount()
   const chainId = useChainId()
-  const { switchChain } = useSwitchChain()
+  const { switchChainAsync } = useSwitchChain()
   const { writeContractAsync } = useWriteContract()
   const [agentAddress, setAgentAddress] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -49,28 +49,19 @@ export function AgentFundModal({ onClose, onSuccess }: AgentFundModalProps) {
   const handleTransfer = async () => {
     if (!userAddress || !agentAddress) return
 
-    // CRITICAL: Verify we're on Arc Testnet
-    console.log('[Fund] Current chainId:', chainId, 'Expected:', ARC_TESTNET_CHAIN_ID)
-    if (chainId !== ARC_TESTNET_CHAIN_ID) {
-      setError(`Wrong network! Please switch to Arc Testnet (Chain ID: ${ARC_TESTNET_CHAIN_ID}). Currently on: ${chainId}`)
-      // Try to auto-switch
-      try {
-        await switchChain({ chainId: ARC_TESTNET_CHAIN_ID })
-        // Wait for switch to complete
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        // Recursive call after switch
-        return handleTransfer()
-      } catch (switchError) {
-        console.error('[Fund] Switch chain failed:', switchError)
-        return
-      }
-    }
-
     setLoading(true)
     setError(null)
     setStep('transferring')
 
     try {
+      // Ensure we're on Arc Testnet before executing transfer
+      console.log('[Fund] Current chainId:', chainId, 'Expected:', ARC_TESTNET_CHAIN_ID)
+      if (chainId !== ARC_TESTNET_CHAIN_ID) {
+        console.log('[Fund] Switching to Arc Testnet...')
+        await switchChainAsync?.({ chainId: ARC_TESTNET_CHAIN_ID })
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      }
+
       const amountInBaseUnits = parseUnits(amount, 6)
 
       // Step 1: Transfer USDC to agent wallet
@@ -80,18 +71,15 @@ export function AgentFundModal({ onClose, onSuccess }: AgentFundModalProps) {
         amount,
         chainId: ARC_TESTNET_CHAIN_ID,
       })
-      
+
       const hash = await writeContractAsync({
         address: USDC_ADDRESS,
         abi: erc20Abi,
         functionName: 'transfer',
         args: [agentAddress as `0x${string}`, amountInBaseUnits],
-        chainId: ARC_TESTNET_CHAIN_ID, // FORCE Arc Testnet
-        gas: 100000n, // Explicit gas limit
-        maxFeePerGas: 150000000n, // 1.5x boost (0.15 gwei)
-        maxPriorityFeePerGas: 150000000n, // 1.5x boost
+        chainId: ARC_TESTNET_CHAIN_ID,
       })
-      
+
       console.log('[Fund] TX hash:', hash)
       console.log('[Fund] ArcScan:', `https://testnet.arcscan.app/tx/${hash}`)
 

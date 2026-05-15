@@ -9,10 +9,10 @@ import {
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react'
-import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
+import { useAccount, useSwitchChain } from 'wagmi'
 import { cn } from '@/lib/utils'
 import { bridgeToArc, SUPPORTED_CHAINS } from '@/lib/cctp-bridge-kit'
-import type { Address } from 'viem'
+import type { Address, EIP1193Provider } from 'viem'
 
 // Get block explorer URL for chain
 function getExplorerUrl(chainId: number): string {
@@ -53,6 +53,10 @@ const SOURCE_CHAINS = [
   },
 ]
 
+type SupportedWagmiChainId =
+  | (typeof SOURCE_CHAINS)[number]['chainId']
+  | (typeof SUPPORTED_CHAINS)['arc-testnet']['chainId']
+
 interface CctpBridgeCardProps {
   onBridgeSuccess?: () => void
 }
@@ -64,9 +68,17 @@ interface BridgeStep {
   chainId?: number
 }
 
+function isEip1193Provider(provider: unknown): provider is EIP1193Provider {
+  return (
+    typeof provider === 'object' &&
+    provider !== null &&
+    'request' in provider &&
+    typeof provider.request === 'function'
+  )
+}
+
 export function CctpBridgeCard({ onBridgeSuccess }: CctpBridgeCardProps) {
-  const { address, chain: currentChain } = useAccount()
-  const { data: walletClient } = useWalletClient()
+  const { address, chain: currentChain, connector } = useAccount()
   const { switchChainAsync } = useSwitchChain()
   const [sourceChain, setSourceChain] = useState(SOURCE_CHAINS[0])
   const [amount, setAmount] = useState('10')
@@ -76,7 +88,7 @@ export function CctpBridgeCard({ onBridgeSuccess }: CctpBridgeCardProps) {
   const [error, setError] = useState<string | null>(null)
 
   const handleBridge = async () => {
-    if (!address || !walletClient) {
+    if (!address || !connector) {
       setError('Please connect your wallet first')
       setStep('error')
       return
@@ -103,26 +115,40 @@ export function CctpBridgeCard({ onBridgeSuccess }: CctpBridgeCardProps) {
       )
     }
 
+    const ensureChain = async (
+      chainId: SupportedWagmiChainId,
+      chainName: string,
+      message: string,
+    ) => {
+      setCurrentMessage(message)
+      try {
+        await switchChainAsync?.({ chainId })
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      } catch (switchErr) {
+        if (switchErr instanceof Error && switchErr.message.includes('User rejected')) {
+          throw new Error(`Chain switch to ${chainName} cancelled.`)
+        }
+        throw new Error(`Failed to switch to ${chainName}. Please switch manually in your wallet.`)
+      }
+    }
+
     try {
+      const provider = await connector.getProvider()
+      if (!isEip1193Provider(provider)) {
+        throw new Error('No wallet provider found')
+      }
+      const walletProvider = provider
+      let destinationSwitchStarted = false
+
       // Step 0: Check if user is on correct source chain, switch if needed
       const targetChainId = SUPPORTED_CHAINS[sourceChain.id].chainId
       if (currentChain?.id !== targetChainId) {
-        setCurrentMessage(`Switching to ${sourceChain.name}...`)
-        try {
-          await switchChainAsync?.({ chainId: targetChainId })
-          setCurrentMessage(`Switched to ${sourceChain.name} — waiting for wallet sync...`)
-          // Wait for wallet client to update to new chain
-          await new Promise((r) => setTimeout(r, 2000))
-        } catch (switchErr) {
-          if (switchErr instanceof Error && switchErr.message.includes('User rejected')) {
-            throw new Error(
-              'Chain switch cancelled. Please switch to the correct network manually.',
-            )
-          }
-          throw new Error(
-            `Failed to switch to ${sourceChain.name}. Please switch manually in your wallet.`,
-          )
-        }
+        await ensureChain(
+          targetChainId,
+          sourceChain.name,
+          `Switching to ${sourceChain.name} before approval...`,
+        )
+        setCurrentMessage(`Switched to ${sourceChain.name} — preparing approval...`)
       }
 
       setCurrentMessage('Preparing bridge transaction...')
@@ -131,8 +157,22 @@ export function CctpBridgeCard({ onBridgeSuccess }: CctpBridgeCardProps) {
         sourceChain.id,
         amount,
         address as Address,
-        walletClient as any,
+        walletProvider,
         async (progressMsg, hash) => {
+          const shouldPrepareMintChain =
+            progressMsg.includes('Burn complete') || progressMsg.includes('attestation')
+
+          if (shouldPrepareMintChain && !destinationSwitchStarted) {
+            destinationSwitchStarted = true
+            void ensureChain(5042002, 'Arc Testnet', 'Switching to Arc Testnet before mint...')
+              .then(() => {
+                setCurrentMessage('Switched to Arc Testnet — waiting for attestation...')
+              })
+              .catch((switchErr) => {
+                console.error('[Chain Switch Error]', switchErr)
+              })
+          }
+
           setCurrentMessage(progressMsg)
 
           // Update approve step
@@ -145,17 +185,6 @@ export function CctpBridgeCard({ onBridgeSuccess }: CctpBridgeCardProps) {
           // Update burn step
           if (progressMsg.includes('Burn complete')) {
             updateStepStatus('burn', 'success', hash, targetChainId)
-
-            // Auto-switch to Arc Testnet for mint (Bridge Kit needs wallet on destination chain)
-            try {
-              setCurrentMessage('Switching to Arc Testnet for mint...')
-              await switchChainAsync?.({ chainId: 5042002 }) // Arc Testnet
-              await new Promise((r) => setTimeout(r, 2000)) // Wait for wallet sync
-              setCurrentMessage('Switched to Arc Testnet — waiting for attestation...')
-            } catch (switchErr) {
-              console.error('[Chain Switch Error]', switchErr)
-              // Don't throw - let Bridge Kit handle mint error if switch failed
-            }
           } else if (progressMsg.includes('Burning')) {
             updateStepStatus('burn', 'processing')
           }
@@ -281,7 +310,7 @@ export function CctpBridgeCard({ onBridgeSuccess }: CctpBridgeCardProps) {
       {step === 'idle' && (
         <button
           onClick={handleBridge}
-          disabled={!address || !walletClient}
+          disabled={!address || !connector}
           className='w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium cursor-pointer transition-colors'
         >
           <ArrowLeftRight className='h-4 w-4' />

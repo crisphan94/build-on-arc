@@ -1,5 +1,5 @@
 import { http, createConfig } from 'wagmi'
-import { injected, metaMask, walletConnect } from 'wagmi/connectors'
+import { injected, walletConnect } from 'wagmi/connectors'
 
 export const arcTestnet = {
   id: 5042002,
@@ -122,8 +122,7 @@ export const config = createConfig({
     [polygonAmoy.id]: http(),
   },
   connectors: [
-    metaMask(),
-    injected(),
+    injected(), // EIP-6963: auto-detects all installed wallets, uses whichever is active
     ...(process.env.NEXT_PUBLIC_WC_PROJECT_ID
       ? [walletConnect({ projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID })]
       : []),

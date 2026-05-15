@@ -5,7 +5,6 @@
 
 import {
   BridgeKit,
-  type BridgeParams,
   type BridgeResult,
   ArcTestnet,
   EthereumSepolia,
@@ -14,14 +13,7 @@ import {
   PolygonAmoy,
 } from '@circle-fin/bridge-kit'
 import { createViemAdapterFromProvider } from '@circle-fin/adapter-viem-v2'
-import { type WalletClient } from 'viem'
-
-// Type declaration for window.ethereum
-declare global {
-  interface Window {
-    ethereum?: any
-  }
-}
+import type { EIP1193Provider } from 'viem'
 
 // Chain configurations for Bridge Kit
 export const SUPPORTED_CHAINS = {
@@ -48,7 +40,7 @@ export async function bridgeToArc(
   sourceChainId: SupportedChainId,
   amount: string,
   recipientAddress: `0x${string}`,
-  walletClient: WalletClient,
+  walletProvider: EIP1193Provider,
   onProgress?: (step: string, txHash?: string) => void,
 ): Promise<{ burnTx: string; mintTx: string }> {
   onProgress?.('Initializing Bridge Kit...')
@@ -57,14 +49,14 @@ export async function bridgeToArc(
   const sourceChain = SUPPORTED_CHAINS[sourceChainId]
   const destinationChain = SUPPORTED_CHAINS['arc-testnet']
 
-  if (typeof window === 'undefined' || !window.ethereum) {
+  if (!walletProvider) {
     throw new Error('No wallet provider found')
   }
 
   onProgress?.('Creating adapter...')
 
   const adapter = await createViemAdapterFromProvider({
-    provider: window.ethereum as any,
+    provider: walletProvider,
   })
 
   bridgeKit.on('approve', (event) => {

@@ -299,7 +299,7 @@ build-on-arc/
 
 ## Links
 
-- **AgentPay Demo:** [View Architecture](./paid-agent/app/architecture/page.tsx)
+- **Live Demo:** https://youtu.be/1sGZfRzU0UM
 - **Arc Testnet Explorer:** https://testnet.arcscan.app
 - **Circle Developer Docs:** https://developers.circle.com
 - **Groq Console:** https://console.groq.com
